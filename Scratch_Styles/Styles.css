@@ -1,0 +1,21 @@
+.italic {
+    font-style: italic;
+    color: grey;
+}
+
+.bold   {
+    font-weight: bold;
+}
+
+.underline {
+    text-decoration: underline;
+}
+
+.rightmenu ol {
+    padding-left: 15px;
+}
+
+.rightmenu ul {
+    padding-left: 12px;
+    margin-left: 0;
+}

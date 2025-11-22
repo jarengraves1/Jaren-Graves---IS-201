@@ -1,0 +1,1687 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Into the Woods – A Subtle Horror Choice Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <style>
+    :root {
+      --bg: #020617;
+      --card: #020617;
+      --accent: #22c55e;
+      --accent-soft: rgba(34, 197, 94, 0.25);
+      --accent-warn: #fbbf24;
+      --accent-bad: #ef4444;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --border: #111827;
+      --radius-lg: 18px;
+      --radius-md: 10px;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+    }
+
+    body {
+      min-height: 100vh;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background:
+        radial-gradient(circle at 0 0, rgba(15, 23, 42, 0.9), transparent 55%),
+        radial-gradient(circle at 100% 100%, rgba(15, 23, 42, 0.9), transparent 55%),
+        #020617;
+      color: var(--text);
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      padding: 20px;
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 1000px;
+      border-radius: 26px;
+      background:
+        radial-gradient(circle at top, #020617, #000 65%);
+      border: 1px solid rgba(15, 23, 42, 0.9);
+      box-shadow:
+        0 26px 60px rgba(0, 0, 0, 0.9),
+        0 0 50px rgba(15, 23, 42, 0.9);
+      padding: 18px 18px 20px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .shell::before {
+      content: "";
+      position: absolute;
+      inset: -40%;
+      background:
+        radial-gradient(circle at 10% -20%, rgba(148, 163, 184, 0.14), transparent 55%),
+        radial-gradient(circle at 90% 120%, rgba(34, 197, 94, 0.16), transparent 55%),
+        radial-gradient(circle at 50% 100%, rgba(15, 23, 42, 0.9), transparent 65%);
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+      opacity: 0.75;
+    }
+
+    .content {
+      position: relative;
+      z-index: 1;
+    }
+
+    header {
+      margin-bottom: 16px;
+    }
+
+    .header-top {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px;
+    }
+
+    h1 {
+      font-size: 1.5rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+    }
+
+    .glow {
+      width: 18px;
+      height: 18px;
+      border-radius: 8px;
+      background:
+        radial-gradient(circle at 20% 0, #22c55e, #facc15 40%, #0f172a);
+      box-shadow: 0 0 18px rgba(34, 197, 94, 0.9);
+    }
+
+    .pill {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.6);
+      padding: 4px 10px;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .subtitle {
+      font-size: 0.84rem;
+      color: var(--muted);
+      max-width: 650px;
+    }
+
+    .subtitle strong {
+      color: var(--text);
+    }
+
+    .layout {
+      margin-top: 10px;
+      display: grid;
+      grid-template-columns: minmax(0, 3fr) minmax(0, 2.1fr);
+      gap: 14px;
+    }
+
+    @media (max-width: 850px) {
+      .layout {
+        grid-template-columns: 1fr;
+      }
+    }
+
+    .card {
+      background: radial-gradient(circle at 0 0, #020617, #000 55%);
+      border-radius: var(--radius-lg);
+      border: 1px solid var(--border);
+      padding: 14px 13px 15px;
+      position: relative;
+      overflow: hidden;
+    }
+
+    .card::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at 100% 0, rgba(34, 197, 94, 0.16), transparent 65%);
+      mix-blend-mode: soft-light;
+      pointer-events: none;
+    }
+
+    .card-inner {
+      position: relative;
+      z-index: 1;
+    }
+
+    .card-header {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      margin-bottom: 10px;
+    }
+
+    .card-title-main {
+      display: flex;
+      align-items: center;
+      gap: 6px;
+      font-size: 0.92rem;
+      font-weight: 600;
+    }
+
+    .dot {
+      width: 8px;
+      height: 8px;
+      border-radius: 999px;
+      background: radial-gradient(circle at 30% 0, #22c55e, #facc15);
+      box-shadow: 0 0 10px rgba(34, 197, 94, 0.9);
+    }
+
+    .card-title-sub {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .chip {
+      font-size: 0.7rem;
+      padding: 3px 8px;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.98);
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+    }
+
+    .scene-body {
+      display: flex;
+      flex-direction: column;
+      gap: 4px;
+      margin-bottom: 8px;
+    }
+
+    .scene-location {
+      font-size: 0.78rem;
+      color: var(--muted);
+    }
+
+    .scene-text {
+      font-size: 0.9rem;
+      line-height: 1.5;
+      margin-bottom: 6px;
+    }
+
+    .choices {
+      display: flex;
+      flex-direction: column;
+      gap: 7px;
+      margin-bottom: 10px;
+    }
+
+    .choice-btn {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: rgba(15, 23, 42, 0.97);
+      color: var(--text);
+      padding: 7px 9px;
+      font-size: 0.82rem;
+      display: flex;
+      flex-direction: column;
+      align-items: stretch;
+      gap: 4px;
+      cursor: pointer;
+      transition:
+        border 0.14s ease,
+        background 0.14s ease,
+        box-shadow 0.14s ease,
+        transform 0.08s ease;
+      text-align: left;
+    }
+
+    .choice-row {
+      display: flex;
+      align-items: flex-start;
+      gap: 8px;
+    }
+
+    .choice-label {
+      width: 20px;
+      min-width: 20px;
+      height: 20px;
+      border-radius: 999px;
+      border: 1px solid rgba(75, 85, 99, 0.95);
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 0.72rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 1);
+    }
+
+    .choice-text {
+      flex: 1;
+    }
+
+    .choice-chance {
+      font-size: 0.72rem;
+      color: var(--muted);
+      padding-left: 28px;
+    }
+
+    .choice-chance span {
+      font-weight: 500;
+    }
+
+    .choice-btn:hover {
+      border-color: var(--accent-soft);
+      background: #020617;
+      box-shadow: 0 0 0 1px rgba(15, 23, 42, 0.9);
+      transform: translateY(-0.5px);
+    }
+
+    .choice-btn:active {
+      transform: translateY(0.5px);
+      box-shadow: none;
+    }
+
+    .choice-btn.disabled {
+      opacity: 0.55;
+      cursor: default;
+      pointer-events: none;
+    }
+
+    .result {
+      font-size: 0.8rem;
+      padding: 7px 9px;
+      border-radius: var(--radius-md);
+      border: 1px dashed rgba(55, 65, 81, 0.95);
+      background: rgba(15, 23, 42, 0.96);
+      color: var(--muted);
+      min-height: 36px;
+    }
+
+    .result strong {
+      color: var(--accent);
+    }
+
+    .bottom-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 10px;
+      align-items: center;
+      justify-content: space-between;
+    }
+
+    .bars {
+      flex: 1;
+      min-width: 210px;
+      display: grid;
+      grid-template-columns: 1fr;
+      gap: 4px;
+    }
+
+    .bar {
+      font-size: 0.72rem;
+    }
+
+    .bar-label {
+      display: flex;
+      justify-content: space-between;
+      color: var(--muted);
+      margin-bottom: 2px;
+    }
+
+    .bar-track {
+      position: relative;
+      height: 6px;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.98);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      overflow: hidden;
+    }
+
+    .bar-fill {
+      position: absolute;
+      inset: 0;
+      width: 0%;
+      background: linear-gradient(90deg, #22c55e, #4ade80);
+      transition: width 0.16s ease;
+    }
+
+    .bar-fill.warn {
+      background: linear-gradient(90deg, #fbbf24, #f97316);
+    }
+
+    .bar-fill.bad {
+      background: linear-gradient(90deg, #f97316, #ef4444);
+    }
+
+    .btn-main {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.8rem;
+      font-weight: 500;
+      display: inline-flex;
+      align-items: center;
+      gap: 6px;
+      cursor: pointer;
+      background: radial-gradient(circle at top, #22c55e, #15803d);
+      color: #ecfdf5;
+      box-shadow: 0 10px 26px rgba(22, 163, 74, 0.9);
+      transition: transform 0.08s ease, box-shadow 0.1s ease, filter 0.12s ease;
+      white-space: nowrap;
+    }
+
+    .btn-main:hover {
+      filter: brightness(1.05);
+    }
+
+    .btn-main:active {
+      transform: translateY(1px);
+      box-shadow: 0 4px 14px rgba(22, 101, 52, 0.9);
+    }
+
+    .btn-main.secondary {
+      background: rgba(15, 23, 42, 0.97);
+      color: var(--muted);
+      box-shadow: none;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+    }
+
+    .btn-main.secondary:hover {
+      color: var(--text);
+      box-shadow: 0 6px 20px rgba(15, 23, 42, 0.95);
+    }
+
+    .btn-main.danger {
+      background: radial-gradient(circle at top, #ef4444, #7f1d1d);
+      box-shadow: 0 10px 26px rgba(127, 29, 29, 0.9);
+    }
+
+    /* Sidebar */
+
+    .sidebar-section {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      font-size: 0.8rem;
+    }
+
+    .sidebar-title {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.18em;
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    /* Minimap */
+
+    .minimap {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: radial-gradient(circle at 0 0, #020617, #020617 60%);
+      padding: 6px;
+      margin-bottom: 4px;
+    }
+
+    .minimap-grid {
+      display: grid;
+      grid-template-columns: repeat(3, 1fr);
+      gap: 4px;
+    }
+
+    .map-cell {
+      height: 42px;
+      border-radius: 9px;
+      border: 1px dashed rgba(15, 23, 42, 0.95);
+      background: rgba(15, 23, 42, 0.96);
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+      align-items: center;
+      text-align: center;
+      padding: 3px;
+      font-size: 0.68rem;
+      color: rgba(148, 163, 184, 0);
+      position: relative;
+      overflow: hidden;
+    }
+
+    .map-cell .name,
+    .map-cell .hint {
+      opacity: 0;
+      transition: opacity 0.2s ease;
+    }
+
+    .map-cell span.name {
+      font-size: 0.7rem;
+      font-weight: 500;
+    }
+
+    .map-cell.current,
+    .map-cell.visited {
+      border-style: solid;
+      border-color: rgba(55, 65, 81, 0.95);
+      color: rgba(209, 213, 219, 0.9);
+    }
+
+    .map-cell.visited .name,
+    .map-cell.visited .hint,
+    .map-cell.current .name,
+    .map-cell.current .hint {
+      opacity: 1;
+    }
+
+    .map-cell.current {
+      border-color: rgba(34, 197, 94, 0.9);
+      box-shadow: 0 0 0 1px rgba(34, 197, 94, 0.6);
+      color: #bbf7d0;
+    }
+
+    .map-cell.empty {
+      border-style: dashed;
+      border-color: rgba(15, 23, 42, 1);
+      background: rgba(15, 23, 42, 0.96);
+    }
+
+    .map-cell::before {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background:
+        radial-gradient(circle at 50% 0, rgba(15, 23, 42, 0.9), transparent 60%);
+      opacity: 0.7;
+      pointer-events: none;
+    }
+
+    .map-cell.current::before,
+    .map-cell.visited::before {
+      opacity: 0.2;
+    }
+
+    /* Inventory */
+
+    .inventory-box {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: rgba(15, 23, 42, 0.97);
+      padding: 6px 7px;
+      min-height: 50px;
+    }
+
+    .inventory-items {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 4px;
+    }
+
+    .tag {
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      padding: 2px 8px;
+      font-size: 0.7rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.98);
+    }
+
+    .tag.good {
+      border-color: rgba(34, 197, 94, 0.95);
+      color: #bbf7d0;
+    }
+
+    .tag.clue {
+      border-color: rgba(59, 130, 246, 0.95);
+      color: #bfdbfe;
+    }
+
+    .tag.bad {
+      border-color: rgba(239, 68, 68, 0.95);
+      color: #fecaca;
+    }
+
+    /* Log */
+
+    .log-box {
+      border-radius: var(--radius-md);
+      border: 1px solid rgba(31, 41, 55, 0.95);
+      background: rgba(15, 23, 42, 0.97);
+      padding: 6px 7px;
+      max-height: 135px;
+      overflow-y: auto;
+      font-size: 0.76rem;
+    }
+
+    .log-box::-webkit-scrollbar {
+      width: 6px;
+    }
+
+    .log-box::-webkit-scrollbar-thumb {
+      background: rgba(51, 65, 85, 0.95);
+      border-radius: 999px;
+    }
+
+    .log-entry {
+      color: var(--muted);
+      margin-bottom: 3px;
+    }
+
+    .log-entry:last-child {
+      margin-bottom: 0;
+    }
+
+    .log-entry span.step {
+      color: var(--accent);
+    }
+
+    /* Ending */
+
+    .ending-text {
+      font-size: 0.82rem;
+      color: var(--muted);
+      line-height: 1.4;
+    }
+
+    .ending-text strong {
+      color: var(--text);
+    }
+  </style>
+</head>
+<body>
+  <div class="shell">
+    <div class="content">
+      <header>
+        <div class="header-top">
+          <h1>
+            <span class="glow"></span>
+            Into the Woods
+          </h1>
+          <span class="pill">Single file • Choice &amp; minimap • Subtle horror</span>
+        </div>
+        <p class="subtitle">
+          Your sister vanished after a trip to a cabin in the woods outside a small town. The police have stopped picking up your calls.
+          So you drove to the tree line alone. Find out what happened and get out alive. <strong>Four possible endings.</strong>
+        </p>
+      </header>
+
+      <main class="layout">
+        <!-- MAIN STORY -->
+        <section class="card">
+          <div class="card-inner">
+            <div class="card-header">
+              <div>
+                <div class="card-title-main">
+                  <span class="dot"></span>
+                  Current situation
+                </div>
+                <div class="card-title-sub" id="turnLabel">
+                  Turn 1 · Try not to lose the trail.
+                </div>
+              </div>
+              <span class="chip" id="modeChip">Exploring</span>
+            </div>
+
+            <div class="scene-body">
+              <div class="scene-location" id="locationLabel"></div>
+              <div class="scene-text" id="sceneText"></div>
+            </div>
+
+            <div class="choices" id="choicesContainer"></div>
+
+            <div class="result" id="resultBox">
+              Make a choice to see what happens. Some actions are safer than others.
+            </div>
+
+            <div class="bottom-row">
+              <div class="bars">
+                <div class="bar">
+                  <div class="bar-label">
+                    <span>Health</span>
+                    <span id="hpLabel"></span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill" id="hpFill"></div>
+                  </div>
+                </div>
+                <div class="bar">
+                  <div class="bar-label">
+                    <span>Noise</span>
+                    <span id="noiseLabel"></span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill" id="noiseFill"></div>
+                  </div>
+                </div>
+                <div class="bar">
+                  <div class="bar-label">
+                    <span>Presence</span>
+                    <span id="threatLabel"></span>
+                  </div>
+                  <div class="bar-track">
+                    <div class="bar-fill" id="threatFill"></div>
+                  </div>
+                </div>
+              </div>
+
+              <div style="display:flex; gap:6px; align-items:center;">
+                <button class="btn-main secondary" id="escapeNowBtn">
+                  Leave the woods now
+                </button>
+                <button class="btn-main danger" id="restartBtn" style="display:none;">
+                  ⟳ Start over
+                </button>
+              </div>
+            </div>
+          </div>
+        </section>
+
+        <!-- SIDEBAR -->
+        <aside class="card">
+          <div class="card-inner sidebar-section">
+            <div>
+              <div class="sidebar-title">Minimap</div>
+              <div class="minimap" id="minimap">
+                <div class="minimap-grid">
+                  <!-- row 1 -->
+                  <div class="map-cell" data-room="deepWoods">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <div class="map-cell" data-room="cabinExterior">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <div class="map-cell" data-room="cabinLiving">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <!-- row 2 -->
+                  <div class="map-cell" data-room="trailhead">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <div class="map-cell" data-room="cabinHall">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <div class="map-cell" data-room="sisterRoom">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <!-- row 3 -->
+                  <div class="map-cell empty">
+                    <span></span>
+                    <span></span>
+                  </div>
+                  <div class="map-cell" data-room="basementEntry">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                  <div class="map-cell" data-room="basementDeep">
+                    <span class="name"></span>
+                    <span class="hint"></span>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="sidebar-title">Inventory</div>
+              <div class="inventory-box">
+                <div class="inventory-items" id="inventoryBox">
+                  <span class="tag">Empty hands.</span>
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="sidebar-title">Recent events</div>
+              <div class="log-box" id="logBox">
+                <div class="log-entry">
+                  <span class="step">Turn 0:</span> The patrol officer on the phone sounded tired. “We’ll add it to the file,” she said. You drove out anyway.
+                </div>
+              </div>
+            </div>
+
+            <div>
+              <div class="sidebar-title">Ending</div>
+              <p class="ending-text" id="endingText">
+                Escape with <strong>your life</strong>, with or without answers. There are four endings:
+                knowing and proving the truth, knowing alone, escaping in uncertainty, or never leaving the woods at all.
+              </p>
+            </div>
+          </div>
+        </aside>
+      </main>
+    </div>
+  </div>
+
+  <script>
+    // ---------------- GAME DATA ----------------
+
+    const MAX_HP = 10;
+    const MAX_NOISE = 12;
+    const MAX_THREAT = 12;
+
+    const rooms = {
+      trailhead: {
+        id: "trailhead",
+        name: "Edge of the woods",
+        description(state) {
+          if (!state.visited.has("trailhead")) {
+            return "Your car idles behind you, engine ticking quietly as it cools. The town lights are a faint smear through the trees. The trail into the woods is a thin dark line swallowing your phone’s flashlight beam.";
+          } else {
+            return "Your car is still where you left it, a dull reflection in the glass. The woods behind you feel heavier now that you’ve stepped inside them. Going back to the road is only a few minutes’ walk—if you’re ready to leave.";
+          }
+        },
+        actions: [
+          {
+            id: "trail_to_cabin",
+            label: "Follow the narrow trail toward the cabin.",
+            baseChance: 0.9,
+            tags: ["move", "stealth"],
+            success: {
+              text: "You let the darkness swallow the road behind you and follow the trail. Branches scrape your jacket, but the path is clear enough. A darker shape ahead resolves into the outline of a cabin.",
+              moveTo: "cabinExterior",
+              noise: 1,
+              threat: 1,
+            },
+            fail: {
+              text: "You trip on a root and stumble, leaves and gravel skittering ahead of you. Something in the trees stops moving long enough for you to notice it was moving at all.",
+              moveTo: "cabinExterior",
+              noise: 2,
+              threat: 2,
+              hp: -1,
+            },
+          },
+          {
+            id: "trail_into_deep",
+            label: "Leave the marked trail and cut into the trees.",
+            baseChance: 0.65,
+            tags: ["move", "risk"],
+            success: {
+              text: "You push through scrub and low branches, following gaps in the undergrowth. The air grows strangely still as the road noise fades. You’re deeper in than you meant to be.",
+              moveTo: "deepWoods",
+              noise: 1,
+              threat: 2,
+            },
+            fail: {
+              text: "You fight your way between tangled branches. Something snaps loudly under your boot, echoing between the trunks. For a moment, it’s hard to tell which direction the road was.",
+              moveTo: "deepWoods",
+              noise: 3,
+              threat: 3,
+              hp: -1,
+            },
+          },
+          {
+            id: "trail_call_name",
+            label: "Stand at the treeline and call your sister’s name.",
+            baseChance: 0.85,
+            tags: ["loud"],
+            success: {
+              text: "Your voice slides between the trees and disappears. No one answers. The silence that comes after feels thicker than it should.",
+              noise: 2,
+              threat: 1,
+            },
+            fail: {
+              text: "Your voice cracks halfway through her name. It feels too loud. Somewhere out there, something lets the silence settle again.",
+              noise: 3,
+              threat: 2,
+            },
+          },
+        ],
+      },
+
+      deepWoods: {
+        id: "deepWoods",
+        name: "Deep woods",
+        description(state) {
+          return "The trees crowd close here, their branches knitting overhead into a tangle that eats the sky. The undergrowth is damp, and your shoes squelch faintly with every step. It’s hard to tell how far you are from the road.";
+        },
+        actions: [
+          {
+            id: "deep_search",
+            label: "Sweep your light slowly, looking for anything your sister might have dropped.",
+            baseChance: 0.75,
+            tags: ["search"],
+            success: {
+              text: "Caught on a low branch is a strip of fabric you recognise from the photos she sent before the trip. A few steps further, you find a scuffed keychain charm pressed into the mud.",
+              noise: 1,
+              threat: 2,
+              items: ["fabric scrap", "keychain"],
+              knowledge: ["sheMadeItHere"],
+            },
+            fail: {
+              text: "You pick through damp leaves and roots until your fingers go numb. Nothing obvious, but you keep seeing impressions where someone might have stood too long between the trees.",
+              noise: 2,
+              threat: 3,
+            },
+          },
+          {
+            id: "deep_to_trail",
+            label: "Backtrack carefully until you can see the faint line of the trail again.",
+            baseChance: 0.8,
+            tags: ["move", "stealth"],
+            success: {
+              text: "You pay attention to slope and roots and subtle breaks in the brush. Eventually the undergrowth thins and you catch the pale scar of the trail ahead.",
+              moveTo: "trailhead",
+              noise: 1,
+              threat: 1,
+            },
+            fail: {
+              text: "You try to retrace your steps, but the trees look closer together than before. Just as your chest tightens, you spot a weathered trail marker and stumble back toward the path.",
+              moveTo: "trailhead",
+              noise: 2,
+              threat: 3,
+            },
+          },
+          {
+            id: "deep_listen",
+            label: "Switch off your light, stand still, and just listen.",
+            baseChance: 0.7,
+            tags: ["stealth"],
+            success: {
+              text: "With the light gone, the dark presses closer, but your ears adjust. Somewhere ahead, you hear the faint hum of a generator and the soft tick of a cooling metal roof.",
+              noise: 0,
+              threat: 1,
+              knowledge: ["cabinDirection"],
+            },
+            fail: {
+              text: "The dark closes in too quickly. For a few seconds, you’re sure something is standing behind you, tall enough that you’d have to crane your neck to see its face. When you flick the light back on, there’s only trees.",
+              noise: 1,
+              threat: 3,
+              hp: -1,
+            },
+          },
+        ],
+      },
+
+      cabinExterior: {
+        id: "cabinExterior",
+        name: "Cabin exterior",
+        description(state) {
+          return "The cabin sits back from the trail, windows black, porch half-swallowed by shadow. One upstairs curtain hangs crooked. The only light is the faint glow of your phone screen.";
+        },
+        actions: [
+          {
+            id: "cabin_circle",
+            label: "Circle the cabin, looking for footprints, lights, anything.",
+            baseChance: 0.8,
+            tags: ["search"],
+            success: {
+              text: "Around the back you find trampled grass and the faint outline of tire tracks leading deeper into the trees. Near the door, a dark smear on the railing resolves into dried mud from a familiar hiking boot tread.",
+              noise: 1,
+              threat: 2,
+              knowledge: ["othersWereHere"],
+            },
+            fail: {
+              text: "You move slowly, but the porch boards complain under your weight. The cabin remains stubbornly dark. At one window, your reflection glitches for a fraction of a second, like a bad video call.",
+              noise: 2,
+              threat: 3,
+            },
+          },
+          {
+            id: "cabin_knock",
+            label: "Knock on the door and try the handle.",
+            baseChance: 0.7,
+            tags: ["loud"],
+            success: {
+              text: "Your knock echoes dully. The handle turns with a reluctant creak; someone forgot to lock it, or decided it didn’t matter anymore.",
+              moveTo: "cabinLiving",
+              noise: 3,
+              threat: 2,
+            },
+            fail: {
+              text: "The knock sounds much louder than it should in the stillness. The handle is locked. For a long moment after you try it, you feel watched by something just outside your field of view.",
+              noise: 3,
+              threat: 3,
+            },
+          },
+          {
+            id: "cabin_force",
+            label: "Shoulder the door quietly until the latch gives.",
+            baseChance: 0.6,
+            tags: ["loud", "risk"],
+            success: {
+              text: "You brace yourself and lean in. The frame groans, then the latch slips with a soft crack. The air that spills out from inside is cooler than it should be.",
+              moveTo: "cabinLiving",
+              noise: 3,
+              threat: 2,
+              hp: -1,
+            },
+            fail: {
+              text: "You hit the door harder than intended. Wood splinters around the latch with a sharp report that ricochets through the trees.",
+              moveTo: "cabinLiving",
+              noise: 4,
+              threat: 4,
+              hp: -2,
+            },
+          },
+        ],
+      },
+
+      cabinLiving: {
+        id: "cabinLiving",
+        name: "Cabin living room",
+        description(state) {
+          return "Inside smells like dust and cold coffee. A couch sits at an odd angle, cushions scattered. A TV screen across the room is dark but faintly reflective, catching hints of your movement and sometimes, for a blink, things that aren’t you.";
+        },
+        actions: [
+          {
+            id: "living_search",
+            label: "Search the room: under cushions, behind furniture, beneath the TV.",
+            baseChance: 0.8,
+            tags: ["search"],
+            success: {
+              text: "Under the couch you find a dropped flashlight and, behind the TV, a scrap of printer paper with a half-finished message: “I don’t think it’s a joke anymore. If I don’t text you back—”. The rest is torn away.",
+              noise: 1,
+              threat: 1,
+              items: ["flashlight"],
+              knowledge: ["itWasntAJoke"],
+            },
+            fail: {
+              text: "You shift the couch and a remote clatters loudly to the floor. Static flickers on the TV for half a second without power, showing tall shapes between trees before snapping back to black.",
+              noise: 2,
+              threat: 3,
+            },
+          },
+          {
+            id: "living_to_hall",
+            label: "Move down the narrow hallway deeper into the cabin.",
+            baseChance: 0.9,
+            tags: ["move"],
+            success: {
+              text: "The hallway smells faintly of your sister’s shampoo and damp wood. Doors line one side: a bathroom, another bedroom, and the one she texted you from, if the photos were right.",
+              moveTo: "cabinHall",
+              noise: 1,
+              threat: 1,
+            },
+            fail: {
+              text: "As you step into the hallway, one of the pictures on the wall hangs just enough off-kilter that you’re sure it wasn’t like that a moment ago.",
+              moveTo: "cabinHall",
+              noise: 1,
+              threat: 2,
+            },
+          },
+          {
+            id: "living_window",
+            label: "Stand at the window and peer out toward the trees.",
+            baseChance: 0.7,
+            tags: ["risk"],
+            success: {
+              text: "Branches sway gently, but nothing else moves. Your reflection in the glass looks pale and thin. For a second, a taller shape appears behind you in the reflection and vanishes when you turn.",
+              noise: 0,
+              threat: 3,
+            },
+            fail: {
+              text: "You cup your hands to the glass. Your breath fogs the pane, and for a heartbeat something long and thin is traced in the condensation, like fingers. When you blink, it’s gone.",
+              noise: 0,
+              threat: 4,
+              hp: -1,
+            },
+          },
+        ],
+      },
+
+      cabinHall: {
+        id: "cabinHall",
+        name: "Cabin hallway",
+        description(state) {
+          return "The hallway is narrow, lined with family photos that don’t belong to you. One door stands ajar, the one your sister used in her messages. At the far end, a door leads down, air cooler around its frame.";
+        },
+        actions: [
+          {
+            id: "hall_to_sister",
+            label: "Slip into your sister’s room.",
+            baseChance: 0.95,
+            tags: ["move"],
+            success: {
+              text: "The door complains softly but doesn’t stick. Her suitcase is still half-unpacked at the foot of the bed.",
+              moveTo: "sisterRoom",
+              noise: 1,
+              threat: 1,
+            },
+            fail: {
+              text: "The door sticks, then gives with a small pop that sounds too loud. Shadows inside the room feel a little too still.",
+              moveTo: "sisterRoom",
+              noise: 2,
+              threat: 2,
+            },
+          },
+          {
+            id: "hall_to_basement",
+            label: "Test the handle of the basement door at the end of the hall.",
+            baseChance: 0.85,
+            tags: ["move", "risk"],
+            success: {
+              text: "The handle is cold. The door opens on a short flight of wooden steps disappearing into darker air.",
+              moveTo: "basementEntry",
+              noise: 1,
+              threat: 2,
+            },
+            fail: {
+              text: "The metal is colder than it should be, even for a basement. For a moment you feel pressure behind the door, like someone standing too close on the other side.",
+              moveTo: "basementEntry",
+              noise: 1,
+              threat: 3,
+            },
+          },
+          {
+            id: "hall_back_living",
+            label: "Retreat to the living room and collect yourself.",
+            baseChance: 0.95,
+            tags: ["move"],
+            success: {
+              text: "You back away from the closed doors and return to the living room, the hallway’s shadows retreating behind you.",
+              moveTo: "cabinLiving",
+              noise: 1,
+              threat: 0,
+            },
+            fail: {
+              text: "You step back toward the living room. For a moment the hallway feels longer than it should be, like the door is a little farther away each time you blink.",
+              moveTo: "cabinLiving",
+              noise: 1,
+              threat: 2,
+            },
+          },
+        ],
+      },
+
+      sisterRoom: {
+        id: "sisterRoom",
+        name: "Sister’s room",
+        description(state) {
+          return "The room is almost exactly how she posted it: open suitcase, tangled blanket, a mug with lipstick on the rim. Her charger hangs from the outlet with no phone attached.";
+        },
+        actions: [
+          {
+            id: "sister_bed",
+            label: "Search around the bed—under the mattress, between the sheets, behind the headboard.",
+            baseChance: 0.8,
+            tags: ["search"],
+            success: {
+              text: "Stuffed between the mattress and headboard is her notebook. The last pages talk about a local story the group laughed about at first: something old in the woods that doesn’t like being looked at directly. The last entry ends mid-sentence.",
+              noise: 1,
+              threat: 2,
+              items: ["journal"],
+              knowledge: ["localLegend", "truthHint"],
+            },
+            fail: {
+              text: "You find crumpled receipts and a pen chewed almost through the plastic, but no answers. The room feels like it’s been empty for days, but the air is still faintly warm.",
+              noise: 1,
+              threat: 2,
+            },
+          },
+          {
+            id: "sister_bag",
+            label: "Check her suitcase and backpack pockets.",
+            baseChance: 0.75,
+            tags: ["search"],
+            success: {
+              text: "In a side pocket you find a folded paper map with a path traced in marker from the trailhead to the cabin and beyond. Someone circled a spot deeper in the woods and scribbled a question mark.",
+              noise: 1,
+              threat: 1,
+              items: ["hand-drawn map"],
+              knowledge: ["beyondCabin"],
+            },
+            fail: {
+              text: "You unzip pockets and find receipts, gum wrappers, and a ticket stub from the bus ride up. The pocket where her phone should be is empty.",
+              noise: 1,
+              threat: 1,
+            },
+          },
+          {
+            id: "sister_back_hall",
+            label: "Leave the room and return to the hallway.",
+            baseChance: 0.95,
+            tags: ["move"],
+            success: {
+              text: "You step back into the hallway, the scent of her shampoo fading behind the closing door.",
+              moveTo: "cabinHall",
+              noise: 1,
+              threat: 0,
+            },
+            fail: {
+              text: "As you leave, the door drifts closed on its own, latch clicking into place without your hand on it.",
+              moveTo: "cabinHall",
+              noise: 1,
+              threat: 2,
+            },
+          },
+        ],
+      },
+
+      basementEntry: {
+        id: "basementEntry",
+        name: "Top of basement stairs",
+        description(state) {
+          return "The open door breathes cool air up the steps. A single bare bulb halfway down casts a cone of yellow light that doesn’t quite touch the floor below. The darkness there looks thicker than the rest of the house.";
+        },
+        actions: [
+          {
+            id: "basement_down",
+            label: "Descend the stairs, taking each step slowly.",
+            baseChance: 0.75,
+            tags: ["move", "risk"],
+            success: {
+              text: "Each step complains under your weight. At the bottom, concrete spreads out in a rough half-finished room. Stains and old paint blur on the walls.",
+              moveTo: "basementDeep",
+              noise: 2,
+              threat: 3,
+            },
+            fail: {
+              text: "Halfway down, one step creaks sharply and your foot slips. You catch yourself on the railing, but your shoulder protests and something in the dark briefly looks up at you from the concrete.",
+              moveTo: "basementDeep",
+              noise: 3,
+              threat: 4,
+              hp: -2,
+            },
+          },
+          {
+            id: "basement_close",
+            label: "Close the basement door. Some places don’t want visitors.",
+            baseChance: 0.9,
+            tags: ["stealth"],
+            success: {
+              text: "You ease the door until the latch kisses the frame without a sound. The hallway feels less cold with it shut.",
+              moveTo: "cabinHall",
+              noise: 0,
+              threat: -1,
+            },
+            fail: {
+              text: "You try to close the door quietly, but the latch snaps shut with an echo that rattles down the stairs.",
+              moveTo: "cabinHall",
+              noise: 2,
+              threat: 2,
+            },
+          },
+          {
+            id: "basement_listen",
+            label: "Lean over the stairwell and listen.",
+            baseChance: 0.7,
+            tags: ["stealth"],
+            success: {
+              text: "You hear the faint buzz of something electronic and the soft irregular hiss of static, like a phone struggling for a signal underground.",
+              noise: 0,
+              threat: 2,
+              knowledge: ["phoneDownThere"],
+            },
+            fail: {
+              text: "You listen too long. The static sound builds in your ears until it becomes a tone only you can hear. When it stops, the silence feels sharper.",
+              noise: 0,
+              threat: 3,
+              hp: -1,
+            },
+          },
+        ],
+      },
+
+      basementDeep: {
+        id: "basementDeep",
+        name: "Basement",
+        description(state) {
+          return "Concrete floor. Unfinished walls. A folding table sits under the lone bulb, scattered with empty cans, a speaker that should be off, and dark scuffs on the floor that don’t quite look like footprints.";
+        },
+        actions: [
+          {
+            id: "base_search_table",
+            label: "Search the table: cans, cords, under the speaker.",
+            baseChance: 0.75,
+            tags: ["search"],
+            success: {
+              text: "Behind the speaker you find your sister’s phone, screen spiderwebbed but still faintly glowing. The gallery is full of photos: the group smiling, the woods at night, and then glitching shots of something tall at the edge of the frame, closer each time.",
+              noise: 1,
+              threat: 3,
+              items: ["sisterPhone"],
+              knowledge: ["truth", "itFollowed"],
+            },
+            fail: {
+              text: "You bump the table. A can rolls and hits the floor with a hollow clang. For a moment the speaker wheezes to life with a burst of static that sounds almost like your name.",
+              noise: 3,
+              threat: 4,
+            },
+          },
+          {
+            id: "base_symbols",
+            label: "Follow the strange marks and scuffs along the wall.",
+            baseChance: 0.6,
+            tags: ["risk"],
+            success: {
+              text: "The marks are a messy mix of boot scuffs and something scraped by hand. You find a spot where your sister’s handwriting on the wall simply stops mid-sentence, the last letters trailing downward.",
+              noise: 1,
+              threat: 3,
+              knowledge: ["truth"],
+            },
+            fail: {
+              text: "Your fingers trace along the marks until they brush over something damp and cold. For a heartbeat, the room feels crowded with tall, thin silhouettes pressed just outside the light.",
+              noise: 2,
+              threat: 4,
+              hp: -2,
+            },
+          },
+          {
+            id: "base_run_up",
+            label: "Go back up the stairs without looking back.",
+            baseChance: 0.8,
+            tags: ["move", "stealth"],
+            success: {
+              text: "You take the stairs quickly, refusing to glance over your shoulder. The basement air clings to you all the way back into the hallway.",
+              moveTo: "basementEntry",
+              noise: 2,
+              threat: 2,
+            },
+            fail: {
+              text: "Halfway up, every hair on your arms lifts. You swear something long and thin brushes your ankle. You don’t stop to check.",
+              moveTo: "basementEntry",
+              noise: 2,
+              threat: 4,
+              hp: -1,
+            },
+          },
+        ],
+      },
+    };
+
+    // Data for minimap labels (revealed on visit)
+    const minimapMeta = {
+      deepWoods: { name: "Deep woods", hint: "Branches knit overhead." },
+      cabinExterior: { name: "Cabin", hint: "Dark outline." },
+      cabinLiving: { name: "Living room", hint: "Shadows inside." },
+      trailhead: { name: "Trailhead", hint: "Your car, the road." },
+      cabinHall: { name: "Hallway", hint: "Doors, silence." },
+      sisterRoom: { name: "Sister's room", hint: "Her suitcase." },
+      basementEntry: { name: "Basement door", hint: "Air feels wrong." },
+      basementDeep: { name: "Basement", hint: "Concrete & static." },
+    };
+
+    // ---------------- STATE ----------------
+
+    const state = {
+      currentRoom: "trailhead",
+      hp: MAX_HP,
+      noise: 0,
+      threat: 0,
+      turn: 1,
+      inventory: new Set(),
+      knowledge: new Set(),
+      visited: new Set(["trailhead"]),
+      dead: false,
+      escaped: false,
+      finalEnding: null,
+    };
+
+    // ---------------- DOM ----------------
+
+    const locationLabelEl = document.getElementById("locationLabel");
+    const sceneTextEl = document.getElementById("sceneText");
+    const choicesContainerEl = document.getElementById("choicesContainer");
+    const resultBoxEl = document.getElementById("resultBox");
+    const turnLabelEl = document.getElementById("turnLabel");
+    const modeChipEl = document.getElementById("modeChip");
+
+    const hpLabelEl = document.getElementById("hpLabel");
+    const noiseLabelEl = document.getElementById("noiseLabel");
+    const threatLabelEl = document.getElementById("threatLabel");
+    const hpFillEl = document.getElementById("hpFill");
+    const noiseFillEl = document.getElementById("noiseFill");
+    const threatFillEl = document.getElementById("threatFill");
+
+    const minimapEl = document.getElementById("minimap");
+    const inventoryBoxEl = document.getElementById("inventoryBox");
+    const logBoxEl = document.getElementById("logBox");
+    const endingTextEl = document.getElementById("endingText");
+
+    const escapeNowBtn = document.getElementById("escapeNowBtn");
+    const restartBtn = document.getElementById("restartBtn");
+
+    // ---------------- HELPERS ----------------
+
+    function clamp(value, min, max) {
+      return Math.max(min, Math.min(max, value));
+    }
+
+    function addInventory(items = []) {
+      items.forEach((item) => state.inventory.add(item));
+    }
+
+    function addKnowledge(flags = []) {
+      flags.forEach((k) => state.knowledge.add(k));
+    }
+
+    function logEvent(text) {
+      const div = document.createElement("div");
+      div.className = "log-entry";
+      div.innerHTML = `<span class="step">Turn ${state.turn}:</span> ${text}`;
+      logBoxEl.appendChild(div);
+      logBoxEl.scrollTop = logBoxEl.scrollHeight;
+    }
+
+    function updateBars() {
+      const hpPct = (state.hp / MAX_HP) * 100;
+      const noisePct = clamp((state.noise / MAX_NOISE) * 100, 0, 100);
+      const threatPct = clamp((state.threat / MAX_THREAT) * 100, 0, 100);
+
+      hpLabelEl.textContent = `${state.hp}/${MAX_HP}`;
+      noiseLabelEl.textContent = state.noise.toString();
+      threatLabelEl.textContent = state.threat.toString();
+
+      hpFillEl.style.width = `${hpPct}%`;
+      noiseFillEl.style.width = `${noisePct}%`;
+      threatFillEl.style.width = `${threatPct}%`;
+
+      hpFillEl.className = "bar-fill";
+      noiseFillEl.className = "bar-fill";
+      threatFillEl.className = "bar-fill";
+
+      if (state.hp <= 4) hpFillEl.classList.add(state.hp <= 2 ? "bad" : "warn");
+      if (state.noise >= 6)
+        noiseFillEl.classList.add(state.noise >= 10 ? "bad" : "warn");
+      if (state.threat >= 6)
+        threatFillEl.classList.add(state.threat >= 10 ? "bad" : "warn");
+    }
+
+    function updateInventoryUI() {
+      inventoryBoxEl.innerHTML = "";
+      if (!state.inventory.size) {
+        const span = document.createElement("span");
+        span.className = "tag";
+        span.textContent = "Empty hands.";
+        inventoryBoxEl.appendChild(span);
+        return;
+      }
+      const important = ["sisterPhone", "journal", "hand-drawn map"];
+      const cluey = ["fabric scrap", "keychain"];
+
+      [...state.inventory].sort().forEach((item) => {
+        const span = document.createElement("span");
+        span.className = "tag";
+        if (important.includes(item)) span.classList.add("good");
+        if (cluey.includes(item)) span.classList.add("clue");
+        span.textContent = item;
+        inventoryBoxEl.appendChild(span);
+      });
+    }
+
+    function updateMinimap() {
+      const cells = minimapEl.querySelectorAll(".map-cell");
+      cells.forEach((cell) => {
+        if (cell.classList.contains("empty")) return;
+        const roomId = cell.dataset.room;
+        const meta = minimapMeta[roomId];
+        const nameSpan = cell.querySelector(".name");
+        const hintSpan = cell.querySelector(".hint");
+
+        cell.classList.remove("current", "visited");
+
+        if (state.currentRoom === roomId) {
+          cell.classList.add("current");
+        } else if (state.visited.has(roomId)) {
+          cell.classList.add("visited");
+        }
+
+        if (meta && (state.visited.has(roomId) || state.currentRoom === roomId)) {
+          nameSpan.textContent = meta.name;
+          hintSpan.textContent = meta.hint;
+        } else {
+          nameSpan.textContent = "";
+          hintSpan.textContent = "";
+        }
+      });
+    }
+
+    function updateTurnLabel() {
+      if (state.dead || state.escaped) {
+        turnLabelEl.textContent = `Turn ${state.turn} · Story resolved.`;
+        modeChipEl.textContent = "Ending";
+      } else {
+        turnLabelEl.textContent = `Turn ${state.turn} · The woods are listening.`;
+        modeChipEl.textContent = "Exploring";
+      }
+    }
+
+    function getChanceForAction(action) {
+      let c = action.baseChance;
+
+      if (action.tags && (action.tags.includes("stealth") || action.tags.includes("risk"))) {
+        if (state.noise >= 6) c -= 0.12;
+        if (state.noise >= 10) c -= 0.08;
+      }
+
+      if (action.tags && action.tags.includes("search")) {
+        if (state.inventory.has("flashlight")) c += 0.1;
+      }
+
+      if (action.tags && action.tags.includes("risk")) {
+        if (state.hp <= 4) c -= 0.1;
+      }
+
+      if (action.tags && action.tags.includes("move")) {
+        if (state.inventory.has("hand-drawn map")) c += 0.08;
+        if (state.knowledge.has("cabinDirection")) c += 0.04;
+      }
+
+      if (state.threat >= 6) c -= 0.05;
+      if (state.threat >= 10) c -= 0.08;
+
+      c = clamp(c, 0.15, 0.95);
+      return c;
+    }
+
+    function describeChance(chance) {
+      const pct = Math.round(chance * 100);
+      let mood = "balanced";
+      if (pct >= 75) mood = "favorable";
+      else if (pct <= 35) mood = "risky";
+      return { pct, mood };
+    }
+
+    function applyOutcome(outcome) {
+      if (!outcome) return;
+      state.noise = clamp(state.noise + (outcome.noise || 0), 0, MAX_NOISE + 4);
+      state.threat = clamp(state.threat + (outcome.threat || 0), 0, MAX_THREAT + 4);
+      state.hp = clamp(state.hp + (outcome.hp || 0), 0, MAX_HP);
+
+      if (outcome.items) addInventory(outcome.items);
+      if (outcome.knowledge) addKnowledge(outcome.knowledge);
+
+      if (outcome.moveTo) {
+        state.currentRoom = outcome.moveTo;
+        state.visited.add(outcome.moveTo);
+      }
+    }
+
+    function checkDeath() {
+      if (state.hp <= 0) {
+        state.dead = true;
+        state.finalEnding = 4;
+        endingTextEl.innerHTML =
+          "<strong>Ending 4 – The woods keep you.</strong> At some point, your body simply can’t keep up with what’s watching you. The last thing you remember is the shape of the trees bending the wrong way as something tall steps into view. By the time anyone thinks to check the cabin again, the woods have already taken you.";
+        resultBoxEl.innerHTML =
+          "<strong>Your body gives out.</strong> You don’t remember hitting the ground.";
+        modeChipEl.textContent = "Ending";
+        escapeNowBtn.disabled = true;
+        disableChoices();
+        restartBtn.style.display = "inline-flex";
+        return true;
+      }
+
+      if (state.threat >= MAX_THREAT + 1) {
+        if (Math.random() < 0.4) {
+          state.dead = true;
+          state.finalEnding = 4;
+          endingTextEl.innerHTML =
+            "<strong>Ending 4 – You don’t make it back.</strong> The last thing your phone’s front camera would have seen is you glancing over your own shoulder. The search party never finds more than boot scuffs and a car at the trailhead.";
+          resultBoxEl.innerHTML =
+            "<strong>Something finally notices you properly.</strong> You never reach the road.";
+          modeChipEl.textContent = "Ending";
+          escapeNowBtn.disabled = true;
+          disableChoices();
+          restartBtn.style.display = "inline-flex";
+          return true;
+        }
+      }
+
+      return false;
+    }
+
+    function evaluateEscape(leavingText) {
+      if (state.dead) return;
+      state.escaped = true;
+
+      const hasPhone = state.inventory.has("sisterPhone");
+      const knowsTruth = state.knowledge.has("truth") || state.knowledge.has("truthHint");
+      let ending = "";
+      let code = 3;
+
+      if (!knowsTruth && !hasPhone) {
+        code = 3;
+        ending =
+          "<strong>Ending 3 – Out, but not free.</strong> You reach the road trembling, leaves still stuck to your clothes. The police take a statement, but without proof and without a clear story, your words collapse into late-night horror forum fodder. Your sister’s file stays in a drawer. You’re alive, but the woods keep the answers.";
+      } else if (knowsTruth && !hasPhone) {
+        code = 2;
+        ending =
+          "<strong>Ending 2 – You know, alone.</strong> You piece the story together from notes, something scraped into concrete, and the way the photos end. You leave without her phone, but with a clear understanding of what waited for them between the trees. The police listen politely, then mark it up to grief. You live, but the truth is yours alone.";
+      } else if (knowsTruth && hasPhone) {
+        code = 1;
+        ending =
+          "<strong>Ending 1 – Proof in your pocket.</strong> The photos, messages, and recordings on her shattered phone are impossible to dismiss. Faces, dates, pings placing her here. Something tall in the background of too many shots. The police can’t explain it, but they can’t ignore it either. Search teams comb the woods. Officially, the report blames a person. You know better. You’re alive, and this time, they believe you.";
+      } else if (!knowsTruth && hasPhone) {
+        code = 2;
+        ending =
+          "<strong>Ending 2 – Fractured evidence.</strong> You escape with her phone, but the files are scrambled, corrupted by whatever was in the woods with them. There’s just enough to convince someone that something went wrong here, but not enough to explain what. Investigations open. No one says the word you’re thinking.";
+      }
+
+      state.finalEnding = code;
+      endingTextEl.innerHTML = ending;
+      resultBoxEl.innerHTML =
+        "<strong>You leave the woods.</strong> " + (leavingText || "The shapes between the trees grow smaller in your rearview mirror, but they don’t feel gone.");
+      modeChipEl.textContent = "Ending";
+      disableChoices();
+      escapeNowBtn.disabled = true;
+      restartBtn.style.display = "inline-flex";
+    }
+
+    function disableChoices() {
+      const buttons = document.querySelectorAll(".choice-btn");
+      buttons.forEach((b) => b.classList.add("disabled"));
+    }
+
+    // ---------------- RENDER SCENE ----------------
+
+    function renderScene() {
+      const room = rooms[state.currentRoom];
+      if (!room) return;
+
+      locationLabelEl.textContent = room.name;
+      sceneTextEl.textContent = room.description(state);
+
+      choicesContainerEl.innerHTML = "";
+      resultBoxEl.innerHTML =
+        "Make a choice to see what happens. Your odds depend on what you’ve done so far.";
+
+      room.actions.forEach((action, index) => {
+        const btn = document.createElement("button");
+        btn.className = "choice-btn";
+        const chance = getChanceForAction(action);
+        const { pct, mood } = describeChance(chance);
+
+        btn.innerHTML = `
+          <div class="choice-row">
+            <div class="choice-label">${String.fromCharCode(65 + index)}</div>
+            <div class="choice-text">${action.label}</div>
+          </div>
+          <div class="choice-chance">
+            Estimated success: <span>${pct}%</span> · ${mood}
+          </div>
+        `;
+
+        btn.addEventListener("click", () => {
+          if (state.dead || state.escaped) return;
+          handleActionClick(action, chance);
+        });
+
+        choicesContainerEl.appendChild(btn);
+      });
+
+      updateBars();
+      updateInventoryUI();
+      updateMinimap();
+      updateTurnLabel();
+    }
+
+    function handleActionClick(action, precomputedChance) {
+      const chance = precomputedChance ?? getChanceForAction(action);
+      const success = Math.random() < chance;
+      const outcome = success ? action.success : action.fail;
+
+      applyOutcome(outcome);
+
+      const pct = Math.round(chance * 100);
+      const prefix = success ? "Success" : "It doesn’t go as planned";
+
+      resultBoxEl.innerHTML =
+        `<strong>${prefix} (${pct}%).</strong> ` + (outcome?.text || "");
+
+      logEvent(outcome?.text || prefix);
+
+      state.turn++;
+
+      if (!checkDeath() && !state.dead && !state.escaped) {
+        renderScene();
+      }
+    }
+
+    // ---------------- EVENTS ----------------
+
+    escapeNowBtn.addEventListener("click", () => {
+      if (state.dead || state.escaped) return;
+      let text = "";
+      if (state.currentRoom === "trailhead") {
+        text = "You unlock the car with hands that don’t quite feel steady and drive back toward the town’s sodium-orange glow.";
+      } else if (state.currentRoom === "cabinExterior" || state.currentRoom === "deepWoods") {
+        text = "You push back through branches and undergrowth until the road finally appears ahead, a flat line of something human in the dark.";
+      } else {
+        text = "You move fast, barely noticing branches and uneven ground until the trees thin and your car sits waiting like it never considered leaving without you.";
+      }
+      evaluateEscape(text);
+    });
+
+    restartBtn.addEventListener("click", () => {
+      state.currentRoom = "trailhead";
+      state.hp = MAX_HP;
+      state.noise = 0;
+      state.threat = 0;
+      state.turn = 1;
+      state.inventory = new Set();
+      state.knowledge = new Set();
+      state.visited = new Set(["trailhead"]);
+      state.dead = false;
+      state.escaped = false;
+      state.finalEnding = null;
+      escapeNowBtn.disabled = false;
+      restartBtn.style.display = "none";
+      logBoxEl.innerHTML = `
+        <div class="log-entry">
+          <span class="step">Turn 0:</span> The patrol officer on the phone sounded tired. “We’ll add it to the file,” she said. You drove out anyway.
+        </div>
+      `;
+      endingTextEl.innerHTML =
+        "Escape with <strong>your life</strong>, with or without answers. There are four endings: knowing and proving the truth, knowing alone, escaping in uncertainty, or never leaving the woods at all.";
+      renderScene();
+    });
+
+    // ---------------- INIT ----------------
+
+    renderScene();
+  </script>
+</body>
+</html>

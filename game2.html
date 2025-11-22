@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Avatar Element Training Arena</title>
+  <style>
+    :root {
+      --bg: #020617;
+      --panel: #020617;
+      --panel-soft: #020617;
+      --border: #1e293b;
+      --text: #e5e7eb;
+      --muted: #9ca3af;
+      --air: #38bdf8;
+      --water: #0ea5e9;
+      --earth: #22c55e;
+      --fire: #f97316;
+    }
+
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    }
+
+    body {
+      min-height: 100vh;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: radial-gradient(circle at top, #1f2937 0, #020617 55%);
+      color: var(--text);
+    }
+
+    .shell {
+      width: 100%;
+      max-width: 960px;
+      padding: 1.5rem;
+    }
+
+    .card {
+      background:
+        radial-gradient(circle at top left, rgba(148, 163, 184, 0.16), transparent 55%),
+        radial-gradient(circle at bottom right, rgba(55, 65, 81, 0.5), rgba(15, 23, 42, 0.97));
+      border-radius: 1.25rem;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      box-shadow:
+        0 20px 40px rgba(0, 0, 0, 0.7),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+      padding: 1.6rem 1.7rem 1.3rem;
+    }
+
+    header {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 1rem;
+      margin-bottom: 1rem;
+      align-items: center;
+    }
+
+    h1 {
+      font-size: 1.8rem;
+      letter-spacing: 0.08em;
+      text-transform: uppercase;
+      display: flex;
+      align-items: center;
+      gap: 0.6rem;
+    }
+
+    .logo {
+      width: 2.4rem;
+      height: 2.4rem;
+      border-radius: 999px;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      background: conic-gradient(
+        from 0deg,
+        var(--air),
+        var(--water),
+        var(--earth),
+        var(--fire),
+        var(--air)
+      );
+      box-shadow:
+        0 0 0 2px rgba(15, 23, 42, 0.9),
+        0 0 25px rgba(59, 130, 246, 0.45);
+      font-size: 1.4rem;
+    }
+
+    .subtitle {
+      font-size: 0.92rem;
+      color: var(--muted);
+      max-width: 480px;
+      line-height: 1.5;
+    }
+
+    .subtitle strong {
+      color: #fbbf24;
+      font-weight: 600;
+    }
+
+    .hud {
+      display: grid;
+      grid-template-columns: repeat(4, minmax(0, 1fr));
+      gap: 0.7rem;
+      margin-bottom: 1rem;
+    }
+
+    .hud-item {
+      border-radius: 0.9rem;
+      border: 1px solid var(--border);
+      padding: 0.55rem 0.75rem;
+      background: radial-gradient(circle at top left, rgba(30, 64, 175, 0.28), rgba(15, 23, 42, 0.98));
+      position: relative;
+      overflow: hidden;
+    }
+
+    .hud-item::after {
+      content: "";
+      position: absolute;
+      inset: 0;
+      background: radial-gradient(circle at top right, rgba(248, 250, 252, 0.08), transparent 60%);
+      mix-blend-mode: screen;
+      pointer-events: none;
+    }
+
+    .hud-label {
+      font-size: 0.7rem;
+      text-transform: uppercase;
+      letter-spacing: 0.12em;
+      color: #9ca3af;
+    }
+
+    .hud-value {
+      font-size: 1.1rem;
+      font-weight: 600;
+      margin-top: 0.15rem;
+    }
+
+    .hud-sub {
+      font-size: 0.7rem;
+      color: #9ca3af;
+    }
+
+    .health-bar-outer {
+      margin-top: 0.2rem;
+      width: 100%;
+      height: 0.6rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.95);
+      border: 1px solid rgba(55, 65, 81, 0.9);
+      overflow: hidden;
+    }
+
+    .health-bar-inner {
+      height: 100%;
+      width: 100%;
+      transform-origin: left center;
+      background: linear-gradient(90deg, #22c55e, #facc15, #f97316, #ef4444);
+    }
+
+    .element-pills {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.4rem;
+      margin-top: 0.3rem;
+      z-index: 1;
+      position: relative;
+    }
+
+    .pill {
+      font-size: 0.7rem;
+      padding: 0.12rem 0.45rem;
+      border-radius: 999px;
+      border: 1px solid rgba(148, 163, 184, 0.4);
+      background: rgba(15, 23, 42, 0.9);
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.25rem;
+      opacity: 0.65;
+      transition: opacity 0.1s ease, transform 0.08s ease, box-shadow 0.08s;
+    }
+
+    .pill span.dot {
+      width: 0.6rem;
+      height: 0.6rem;
+      border-radius: 999px;
+      background: currentColor;
+    }
+
+    .pill.active {
+      opacity: 1;
+      box-shadow: 0 0 0 1px rgba(191, 219, 254, 0.6);
+      transform: translateY(-1px);
+    }
+
+    .game-wrapper {
+      position: relative;
+      border-radius: 1rem;
+      border: 1px solid rgba(15, 23, 42, 0.95);
+      background:
+        radial-gradient(circle at center, rgba(15, 23, 42, 0.6), rgba(2, 6, 23, 0.98));
+      padding: 0.8rem;
+      box-shadow: inset 0 0 0 1px rgba(30, 64, 175, 0.5);
+    }
+
+    canvas {
+      display: block;
+      width: 100%;
+      max-height: 480px;
+      border-radius: 0.8rem;
+      background:
+        radial-gradient(circle at 15% 10%, rgba(148, 163, 184, 0.2), transparent 55%),
+        radial-gradient(circle at 80% 90%, rgba(248, 250, 252, 0.16), transparent 55%),
+        conic-gradient(from 210deg, #020617, #020617, #0f172a, #020617);
+      border: 2px solid rgba(30, 64, 175, 0.8);
+      image-rendering: pixelated;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      justify-content: space-between;
+      gap: 0.8rem;
+      margin-top: 0.8rem;
+      align-items: center;
+    }
+
+    .btn-group {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.5rem;
+    }
+
+    button {
+      border: none;
+      border-radius: 999px;
+      padding: 0.45rem 0.9rem;
+      font-size: 0.9rem;
+      font-weight: 600;
+      cursor: pointer;
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      background: radial-gradient(circle at top left, #38bdf8, #1d4ed8);
+      color: #e5e7eb;
+      box-shadow:
+        0 10px 18px rgba(15, 23, 42, 0.9),
+        0 0 0 1px rgba(15, 23, 42, 0.9);
+      transition:
+        transform 0.08s ease-out,
+        box-shadow 0.08s ease-out,
+        filter 0.08s ease-out;
+    }
+
+    button.secondary {
+      background: radial-gradient(circle at top left, #4b5563, #111827);
+    }
+
+    button:active {
+      transform: translateY(1px) scale(0.98);
+      box-shadow:
+        0 4px 8px rgba(0, 0, 0, 0.8),
+        0 0 0 1px rgba(15, 23, 42, 1);
+      filter: brightness(0.95);
+    }
+
+    .keys-hint {
+      font-size: 0.75rem;
+      color: var(--muted);
+      display: flex;
+      flex-wrap: wrap;
+      gap: 0.35rem;
+      align-items: center;
+    }
+
+    .key-chip {
+      border-radius: 0.4rem;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+      padding: 0.1rem 0.35rem;
+      font-size: 0.7rem;
+      background: rgba(15, 23, 42, 0.95);
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 0.35rem;
+      font-size: 0.8rem;
+      color: var(--muted);
+      background: rgba(15, 23, 42, 0.9);
+      padding: 0.35rem 0.7rem;
+      border-radius: 999px;
+      border: 1px solid rgba(55, 65, 81, 0.95);
+    }
+
+    .toggle input {
+      accent-color: #f97316;
+    }
+
+    .toast {
+      position: absolute;
+      left: 50%;
+      bottom: 1.4rem;
+      transform: translateX(-50%);
+      padding: 0.35rem 0.9rem;
+      border-radius: 999px;
+      background: rgba(15, 23, 42, 0.96);
+      border: 1px solid rgba(148, 163, 184, 0.8);
+      font-size: 0.8rem;
+      display: none;
+      pointer-events: none;
+      white-space: nowrap;
+      align-items: center;
+      gap: 0.3rem;
+    }
+
+    .toast.show {
+      display: inline-flex;
+    }
+
+    .toast span.icon {
+      font-size: 1rem;
+    }
+
+    @media (max-width: 720px) {
+      .card {
+        padding: 1.2rem 1.1rem 1.1rem;
+      }
+      h1 {
+        font-size: 1.5rem;
+      }
+      .hud {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+      canvas {
+        max-height: 360px;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="shell">
+  <div class="card">
+    <header>
+      <div>
+        <h1>
+          <span class="logo">☯</span>
+          Element Training Arena
+        </h1>
+        <p class="subtitle">
+          Inspired by <strong>Avatar: The Last Airbender</strong>. Move your trainee around the spirit arena,
+          switch bending styles, and survive as long as you can against spirit orbs.
+        </p>
+      </div>
+    </header>
+
+    <section class="hud">
+      <div class="hud-item">
+        <div class="hud-label">Score</div>
+        <div class="hud-value" id="scoreDisplay">0</div>
+        <div class="hud-sub">Spirits purified</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Time</div>
+        <div class="hud-value" id="timeDisplay">0.0</div>
+        <div class="hud-sub">seconds survived</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Health</div>
+        <div class="health-bar-outer">
+          <div class="health-bar-inner" id="healthBar"></div>
+        </div>
+        <div class="hud-sub" id="healthLabel">In balance</div>
+      </div>
+      <div class="hud-item">
+        <div class="hud-label">Element Style</div>
+        <div class="hud-value" id="elementLabel">Air</div>
+        <div class="element-pills" id="elementPills">
+          <button class="pill" data-el="0" style="color: var(--air);">
+            <span class="dot"></span> Air (1)
+          </button>
+          <button class="pill" data-el="1" style="color: var(--water);">
+            <span class="dot"></span> Water (2)
+          </button>
+          <button class="pill" data-el="2" style="color: var(--earth);">
+            <span class="dot"></span> Earth (3)
+          </button>
+          <button class="pill" data-el="3" style="color: var(--fire);">
+            <span class="dot"></span> Fire (4)
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <div class="game-wrapper">
+      <canvas id="gameCanvas" width="800" height="450"></canvas>
+      <div class="toast" id="toast">
+        <span class="icon">✨</span>
+        <span id="toastText">Training begun</span>
+      </div>
+    </div>
+
+    <div class="controls-row">
+      <div class="btn-group">
+        <button id="startBtn">▶ Start / Restart</button>
+        <button id="pauseBtn" class="secondary">⏸ Pause (P)</button>
+      </div>
+      <div class="btn-group">
+        <label class="toggle">
+          <input type="checkbox" id="hardMode">
+          Hard mode (more spirits)
+        </label>
+      </div>
+      <div class="keys-hint">
+        <span class="key-chip">W A S D / Arrows = Move</span>
+        <span class="key-chip">Space = Bend / Attack</span>
+        <span class="key-chip">1 Air • 2 Water • 3 Earth • 4 Fire</span>
+      </div>
+    </div>
+  </div>
+</div>
+
+<script>
+  // ----------- CONFIG -----------
+  const CONFIG = {
+    playerSpeed: 220,
+    arenaPadding: 22,
+    maxHp: 100,
+    fireDamage: 28,
+    waterDamage: 16,
+    earthDamage: 20,
+    airDamage: 10,
+    fireCooldown: 0.32,
+    waterCooldown: 0.5,
+    earthCooldown: 0.75,
+    airCooldown: 0.3,
+    enemyBaseSpeed: 55,
+    enemyHardBoost: 22,
+    enemySpawnInterval: 2.5,
+    enemySpawnIntervalHard: 1.5,
+    enemyDamage: 16,
+    enemyRadius: 14,
+    projectileRadius: 6,
+    earthRadius: 55,
+    airRadius: 75,
+    iFramesAfterHit: 1.0
+  };
+
+  const ELEMENTS = [
+    { name: "Air",   color: "#38bdf8", key: "Digit1" },
+    { name: "Water", color: "#0ea5e9", key: "Digit2" },
+    { name: "Earth", color: "#22c55e", key: "Digit3" },
+    { name: "Fire",  color: "#f97316", key: "Digit4" }
+  ];
+
+  // ----------- DOM -----------
+  const canvas = document.getElementById("gameCanvas");
+  const ctx = canvas.getContext("2d");
+
+  const scoreDisplay = document.getElementById("scoreDisplay");
+  const timeDisplay = document.getElementById("timeDisplay");
+  const healthBar = document.getElementById("healthBar");
+  const healthLabel = document.getElementById("healthLabel");
+  const elementLabel = document.getElementById("elementLabel");
+  const elementPills = document.getElementById("elementPills");
+  const toast = document.getElementById("toast");
+  const toastText = document.getElementById("toastText");
+
+  const startBtn = document.getElementById("startBtn");
+  const pauseBtn = document.getElementById("pauseBtn");
+  const hardModeCheckbox = document.getElementById("hardMode");
+
+  // ----------- STATE -----------
+  let keys = {};
+  let player;
+  let enemies = [];
+  let projectiles = [];
+  let effects = [];
+
+  let running = false;
+  let paused = false;
+  let elementIndex = 0;
+  let score = 0;
+  let timeSurvived = 0;
+  let lastTime = 0;
+  let lastSpawn = 0;
+  let attackCooldown = 0;
+  let iFrameTimer = 0;
+
+  // ----------- HELPERS -----------
+  function dist(x1, y1, x2, y2) {
+    const dx = x2 - x1;
+    const dy = y2 - y1;
+    return Math.hypot(dx, dy);
+  }
+
+  function clamp(v, min, max) {
+    return Math.max(min, Math.min(max, v));
+  }
+
+  function showToast(message) {
+    toastText.textContent = message;
+    toast.classList.add("show");
+    setTimeout(() => toast.classList.remove("show"), 850);
+  }
+
+  function setElement(index) {
+    elementIndex = index;
+    const el = ELEMENTS[elementIndex];
+    elementLabel.textContent = el.name;
+
+    const pills = elementPills.querySelectorAll(".pill");
+    pills.forEach((pill) => pill.classList.remove("active"));
+    const active = elementPills.querySelector(`.pill[data-el="${index}"]`);
+    if (active) active.classList.add("active");
+  }
+
+  function updateHUD() {
+    scoreDisplay.textContent = score;
+    timeDisplay.textContent = timeSurvived.toFixed(1);
+
+    const hpPercent = player.hp / CONFIG.maxHp;
+    healthBar.style.transform = `scaleX(${clamp(hpPercent, 0, 1)})`;
+
+    if (hpPercent > 0.7) healthLabel.textContent = "In balance";
+    else if (hpPercent > 0.4) healthLabel.textContent = "Chi is unsettled";
+    else if (hpPercent > 0.15) healthLabel.textContent = "On the brink";
+    else healthLabel.textContent = "Moments from defeat";
+  }
+
+  // ----------- INIT / RESET -----------
+  function resetGame() {
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    player = {
+      x: cx,
+      y: cy,
+      radius: 18,
+      hp: CONFIG.maxHp,
+      facingX: 1,
+      facingY: 0
+    };
+    enemies = [];
+    projectiles = [];
+    effects = [];
+    score = 0;
+    timeSurvived = 0;
+    lastSpawn = 0;
+    attackCooldown = 0;
+    iFrameTimer = 0;
+    setElement(0);
+    updateHUD();
+  }
+
+  // ----------- ENEMIES -----------
+  function spawnEnemy() {
+    const pad = CONFIG.arenaPadding + CONFIG.enemyRadius + 6;
+    const side = Math.floor(Math.random() * 4);
+    let x, y;
+
+    if (side === 0) { x = pad; y = Math.random() * (canvas.height - pad * 2) + pad; }
+    else if (side === 1) { x = canvas.width - pad; y = Math.random() * (canvas.height - pad * 2) + pad; }
+    else if (side === 2) { y = pad; x = Math.random() * (canvas.width - pad * 2) + pad; }
+    else { y = canvas.height - pad; x = Math.random() * (canvas.width - pad * 2) + pad; }
+
+    const hard = hardModeCheckbox.checked;
+    const speed = CONFIG.enemyBaseSpeed + (hard ? CONFIG.enemyHardBoost : 0) + Math.random() * 20;
+
+    enemies.push({
+      x, y,
+      radius: CONFIG.enemyRadius,
+      speed,
+      wobble: Math.random() * Math.PI * 2,
+      hp: 35
+    });
+  }
+
+  // ----------- PROJECTILES & ABILITIES -----------
+  function fireProjectile() {
+    const el = ELEMENTS[elementIndex];
+
+    // enforce per-element cooldowns
+    if (elementIndex === 3 && attackCooldown > 0) return; // Fire
+    if (elementIndex === 1 && attackCooldown > 0) return; // Water
+    if (elementIndex === 2 && attackCooldown > 0) return; // Earth
+    if (elementIndex === 0 && attackCooldown > 0) return; // Air
+
+    // default facing if standing still
+    let fx = player.facingX;
+    let fy = player.facingY;
+    if (fx === 0 && fy === 0) { fx = 1; fy = 0; }
+    const len = Math.hypot(fx, fy) || 1;
+    fx /= len;
+    fy /= len;
+
+    if (el.name === "Fire") {
+      attackCooldown = CONFIG.fireCooldown;
+      projectiles.push({
+        x: player.x + fx * (player.radius + 6),
+        y: player.y + fy * (player.radius + 6),
+        vx: fx * 380,
+        vy: fy * 380,
+        radius: CONFIG.projectileRadius,
+        color: ELEMENTS[3].color,
+        type: "fire",
+        dmg: CONFIG.fireDamage,
+        life: 1.1
+      });
+    } else if (el.name === "Water") {
+      attackCooldown = CONFIG.waterCooldown;
+      projectiles.push({
+        x: player.x + fx * (player.radius + 4),
+        y: player.y + fy * (player.radius + 4),
+        vx: fx * 260,
+        vy: fy * 260,
+        radius: CONFIG.projectileRadius + 2,
+        color: ELEMENTS[1].color,
+        type: "water",
+        dmg: CONFIG.waterDamage,
+        life: 1.4,
+        pierce: 2
+      });
+    } else if (el.name === "Earth") {
+      attackCooldown = CONFIG.earthCooldown;
+
+      effects.push({
+        type: "earth",
+        x: player.x,
+        y: player.y,
+        radius: CONFIG.earthRadius,
+        life: 0.25,
+        maxLife: 0.25
+      });
+
+      enemies.forEach((e) => {
+        const d = dist(e.x, e.y, player.x, player.y);
+        if (d < CONFIG.earthRadius + e.radius) {
+          e.hp -= CONFIG.earthDamage;
+          const dx = e.x - player.x;
+          const dy = e.y - player.y;
+          const l = Math.hypot(dx, dy) || 1;
+          e.x += (dx / l) * 20;
+          e.y += (dy / l) * 20;
+        }
+      });
+    } else if (el.name === "Air") {
+      attackCooldown = CONFIG.airCooldown;
+
+      effects.push({
+        type: "air",
+        x: player.x,
+        y: player.y,
+        radius: CONFIG.airRadius,
+        life: 0.22,
+        maxLife: 0.22
+      });
+
+      enemies.forEach((e) => {
+        const d = dist(e.x, e.y, player.x, player.y);
+        if (d < CONFIG.airRadius + e.radius) {
+          const dx = e.x - player.x;
+          const dy = e.y - player.y;
+          const l = Math.hypot(dx, dy) || 1;
+          const strength = (CONFIG.airRadius - d) / CONFIG.airRadius;
+          e.x += (dx / l) * 80 * strength;
+          e.y += (dy / l) * 80 * strength;
+        }
+      });
+    }
+  }
+
+  // ----------- INPUT -----------
+  window.addEventListener("keydown", (e) => {
+    keys[e.code] = true;
+
+    if (e.code === "Space") {
+      e.preventDefault();
+      if (running && !paused) fireProjectile();
+      else if (!running) startGame();
+    }
+
+    if (e.code === "KeyP") {
+      e.preventDefault();
+      togglePause();
+    }
+
+    ELEMENTS.forEach((el, i) => {
+      if (e.code === el.key) setElement(i);
+    });
+  });
+
+  window.addEventListener("keyup", (e) => {
+    keys[e.code] = false;
+  });
+
+  elementPills.addEventListener("click", (e) => {
+    const pill = e.target.closest(".pill");
+    if (!pill) return;
+    const idx = parseInt(pill.dataset.el, 10);
+    setElement(idx);
+  });
+
+  // ----------- UPDATE -----------
+  function update(dt) {
+    if (!running || paused) return;
+
+    timeSurvived += dt;
+    attackCooldown = Math.max(0, attackCooldown - dt);
+    iFrameTimer = Math.max(0, iFrameTimer - dt);
+
+    // movement
+    let mx = 0, my = 0;
+    if (keys["ArrowUp"] || keys["KeyW"]) my -= 1;
+    if (keys["ArrowDown"] || keys["KeyS"]) my += 1;
+    if (keys["ArrowLeft"] || keys["KeyA"]) mx -= 1;
+    if (keys["ArrowRight"] || keys["KeyD"]) mx += 1;
+
+    const len = Math.hypot(mx, my);
+    if (len > 0) {
+      mx /= len;
+      my /= len;
+      player.facingX = mx;
+      player.facingY = my;
+    }
+
+    player.x += mx * CONFIG.playerSpeed * dt;
+    player.y += my * CONFIG.playerSpeed * dt;
+
+    const pad = CONFIG.arenaPadding + player.radius;
+    player.x = clamp(player.x, pad, canvas.width - pad);
+    player.y = clamp(player.y, pad, canvas.height - pad);
+
+    // enemies
+    const hard = hardModeCheckbox.checked;
+    const spawnInterval = hard ? CONFIG.enemySpawnIntervalHard : CONFIG.enemySpawnInterval;
+    lastSpawn += dt;
+    if (lastSpawn > spawnInterval) {
+      lastSpawn = 0;
+      spawnEnemy();
+    }
+
+    enemies.forEach((e) => {
+      const dx = player.x - e.x;
+      const dy = player.y - e.y;
+      const d = Math.hypot(dx, dy) || 1;
+      const vx = (dx / d) * e.speed;
+      const vy = (dy / d) * e.speed;
+
+      e.wobble += dt * 4;
+      const wobbleX = Math.cos(e.wobble) * 18;
+      const wobbleY = Math.sin(e.wobble * 0.7) * 12;
+
+      e.x += (vx + wobbleX) * dt;
+      e.y += (vy + wobbleY) * dt;
+
+      const epad = CONFIG.arenaPadding + e.radius;
+      e.x = clamp(e.x, epad, canvas.width - epad);
+      e.y = clamp(e.y, epad, canvas.height - epad);
+    });
+
+    // projectiles
+    projectiles.forEach((p) => {
+      p.x += p.vx * dt;
+      p.y += p.vy * dt;
+      p.life -= dt;
+    });
+
+    projectiles = projectiles.filter((p) => p.life > 0 &&
+      p.x > -20 && p.x < canvas.width + 20 &&
+      p.y > -20 && p.y < canvas.height + 20);
+
+    // effects
+    effects.forEach((fx) => {
+      fx.life -= dt;
+    });
+    effects = effects.filter((fx) => fx.life > 0);
+
+    // collisions: projectile vs enemy
+    projectiles.forEach((p) => {
+      enemies.forEach((e) => {
+        if (e.hp <= 0) return;
+        const d = dist(p.x, p.y, e.x, e.y);
+        if (d < e.radius + p.radius) {
+          e.hp -= p.dmg;
+          if (p.type === "fire") {
+            const dx = e.x - p.x;
+            const dy = e.y - p.y;
+            const l = Math.hypot(dx, dy) || 1;
+            e.x += (dx / l) * 16;
+            e.y += (dy / l) * 16;
+          }
+          if (p.type === "water") {
+            if (p.pierce !== undefined) {
+              p.pierce -= 1;
+              if (p.pierce <= 0) p.life = 0;
+            }
+          } else {
+            p.life = 0;
+          }
+        }
+      });
+    });
+
+    // remove dead enemies
+    const before = enemies.length;
+    enemies = enemies.filter((e) => e.hp > 0);
+    const killed = before - enemies.length;
+    if (killed > 0) {
+      score += killed;
+      if (Math.random() < 0.2) {
+        showToast("Spirit balanced +" + killed);
+      }
+    }
+
+    // enemies hit player
+    enemies.forEach((e) => {
+      const d = dist(e.x, e.y, player.x, player.y);
+      if (d < e.radius + player.radius) {
+        if (iFrameTimer <= 0) {
+          player.hp -= CONFIG.enemyDamage;
+          iFrameTimer = CONFIG.iFramesAfterHit;
+          showToast("You took a hit!");
+          if (player.hp <= 0) {
+            player.hp = 0;
+            gameOver();
+          }
+        }
+      }
+    });
+
+    updateHUD();
+  }
+
+  // ----------- DRAWING -----------
+  function drawArena() {
+    ctx.save();
+
+    // outer subtle ring
+    const cx = canvas.width / 2;
+    const cy = canvas.height / 2;
+    const r = Math.min(canvas.width, canvas.height) / 2 - 16;
+
+    const gradient = ctx.createRadialGradient(cx, cy, r * 0.1, cx, cy, r);
+    gradient.addColorStop(0, "rgba(15, 23, 42, 1)");
+    gradient.addColorStop(1, "rgba(15, 23, 42, 0.1)");
+    ctx.fillStyle = gradient;
+    ctx.beginPath();
+    ctx.arc(cx, cy, r, 0, Math.PI * 2);
+    ctx.fill();
+
+    // four element quadrants
+    const sectors = [
+      { color: ELEMENTS[0].color, start: -Math.PI / 2, end: 0 },              // Air top
+      { color: ELEMENTS[1].color, start: 0, end: Math.PI / 2 },               // Water right
+      { color: ELEMENTS[2].color, start: Math.PI / 2, end: Math.PI },         // Earth bottom
+      { color: ELEMENTS[3].color, start: Math.PI, end: 1.5 * Math.PI }        // Fire left
+    ];
+    sectors.forEach((s) => {
+      ctx.beginPath();
+      ctx.moveTo(cx, cy);
+      ctx.arc(cx, cy, r * 0.78, s.start, s.end);
+      ctx.closePath();
+      ctx.fillStyle = s.color + "22";
+      ctx.fill();
+    });
+
+    // inner circle
+    ctx.beginPath();
+    ctx.arc(cx, cy, 6, 0, Math.PI * 2);
+    ctx.fillStyle = "rgba(248, 250, 252, 0.9)";
+    ctx.fill();
+
+    ctx.restore();
+  }
+
+  function drawPlayer() {
+    ctx.save();
+
+    // shadow
+    ctx.globalAlpha = 0.45;
+    ctx.fillStyle = "rgba(15,23,42,0.96)";
+    ctx.beginPath();
+    ctx.ellipse(
+      player.x,
+      player.y + player.radius * 0.75,
+      player.radius * 1.3,
+      player.radius * 0.6,
+      0,
+      0,
+      Math.PI * 2
+    );
+    ctx.fill();
+
+    ctx.globalAlpha = 1;
+    const el = ELEMENTS[elementIndex];
+
+    // aura
+    const aura = ctx.createRadialGradient(
+      player.x,
+      player.y,
+      player.radius * 0.4,
+      player.x,
+      player.y,
+      player.radius * 1.5
+    );
+    aura.addColorStop(0, el.color + "aa");
+    aura.addColorStop(1, el.color + "11");
+    ctx.fillStyle = aura;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius * 1.4, 0, Math.PI * 2);
+    ctx.fill();
+
+    // body
+    const bodyGrad = ctx.createRadialGradient(
+      player.x - player.radius * 0.3,
+      player.y - player.radius * 0.3,
+      4,
+      player.x,
+      player.y,
+      player.radius * 1.2
+    );
+    bodyGrad.addColorStop(0, "#fefce8");
+    bodyGrad.addColorStop(1, "#1f2937");
+    ctx.fillStyle = bodyGrad;
+    ctx.beginPath();
+    ctx.arc(player.x, player.y, player.radius, 0, Math.PI * 2);
+    ctx.fill();
+
+    ctx.lineWidth = 2;
+    ctx.strokeStyle = "rgba(15,23,42,0.95)";
+    ctx.stroke();
+
+    // arrow (forehead mark)
+    ctx.strokeStyle = el.color;
+    ctx.lineWidth = 2.5;
+    ctx.beginPath();
+    ctx.moveTo(player.x, player.y - player.radius * 0.8);
+    ctx.lineTo(player.x, player.y);
+    ctx.moveTo(player.x - 6, player.y - player.radius * 0.35);
+    ctx.lineTo(player.x, player.y);
+    ctx.lineTo(player.x + 6, player.y - player.radius * 0.35);
+    ctx.stroke();
+
+    ctx.restore();
+  }
+
+  function drawEnemies() {
+    ctx.save();
+    enemies.forEach((e) => {
+      ctx.save();
+
+      // outer glow
+      const glow = ctx.createRadialGradient(
+        e.x, e.y, 4,
+        e.x, e.y, e.radius * 1.6
+      );
+      glow.addColorStop(0, "rgba(129, 140, 248, 0.9)");
+      glow.addColorStop(1, "rgba(129, 140, 248, 0.1)");
+      ctx.fillStyle = glow;
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.radius * 1.4, 0, Math.PI * 2);
+      ctx.fill();
+
+      // core
+      ctx.beginPath();
+      ctx.arc(e.x, e.y, e.radius, 0, Math.PI * 2);
+      ctx.fillStyle = "rgba(129, 140, 248, 0.95)";
+      ctx.fill();
+      ctx.strokeStyle = "rgba(15,23,42,0.9)";
+      ctx.lineWidth = 2;
+      ctx.stroke();
+
+      ctx.restore();
+    });
+    ctx.restore();
+  }
+
+  function drawProjectiles() {
+    ctx.save();
+    projectiles.forEach((p) => {
+      ctx.beginPath();
+      const grad = ctx.createRadialGradient(
+        p.x - p.vx * 0.01,
+        p.y - p.vy * 0.01,
+        1,
+        p.x,
+        p.y,
+        p.radius * 1.6
+      );
+      grad.addColorStop(0, p.color);
+      grad.addColorStop(1, p.color + "00");
+      ctx.fillStyle = grad;
+      ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
+      ctx.fill();
+    });
+    ctx.restore();
+  }
+
+  function drawEffects() {
+    ctx.save();
+    effects.forEach((fx) => {
+      const t = fx.life / fx.maxLife;
+      if (fx.type === "earth") {
+        ctx.strokeStyle = ELEMENTS[2].color;
+        ctx.lineWidth = 3;
+        ctx.globalAlpha = t * 0.9;
+        ctx.beginPath();
+        ctx.arc(fx.x, fx.y, fx.radius * (1 + (1 - t) * 0.2), 0, Math.PI * 2);
+        ctx.stroke();
+      } else if (fx.type === "air") {
+        ctx.globalAlpha = t;
+        const g = ctx.createRadialGradient(
+          fx.x, fx.y, fx.radius * 0.4,
+          fx.x, fx.y, fx.radius * 1.1
+        );
+        g.addColorStop(0, ELEMENTS[0].color + "77");
+        g.addColorStop(1, ELEMENTS[0].color + "00");
+        ctx.fillStyle = g;
+        ctx.beginPath();
+        ctx.arc(fx.x, fx.y, fx.radius, 0, Math.PI * 2);
+        ctx.fill();
+      }
+    });
+    ctx.restore();
+  }
+
+  function drawOverlay() {
+    ctx.save();
+    if (!running) {
+      ctx.fillStyle = "rgba(15,23,42,0.78)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "bold 32px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Element Training", canvas.width / 2, canvas.height / 2 - 25);
+      ctx.font = "16px system-ui";
+      ctx.fillStyle = "#cbd5f5";
+      ctx.fillText("Press Start or Space to begin", canvas.width / 2, canvas.height / 2 + 5);
+      ctx.font = "14px system-ui";
+      ctx.fillStyle = "#9ca3af";
+      ctx.fillText("1–4 to switch styles • Space to bend • Survive as long as you can", canvas.width / 2, canvas.height / 2 + 32);
+    } else if (paused) {
+      ctx.fillStyle = "rgba(15,23,42,0.75)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "bold 26px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Paused", canvas.width / 2, canvas.height / 2);
+    } else if (player.hp <= 0) {
+      ctx.fillStyle = "rgba(15,23,42,0.86)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+      ctx.fillStyle = "#e5e7eb";
+      ctx.font = "bold 30px system-ui";
+      ctx.textAlign = "center";
+      ctx.fillText("Training Complete", canvas.width / 2, canvas.height / 2 - 20);
+      ctx.font = "16px system-ui";
+      ctx.fillStyle = "#fef3c7";
+      ctx.fillText(`Score: ${score} • Time: ${timeSurvived.toFixed(1)}s`, canvas.width / 2, canvas.height / 2 + 8);
+      ctx.font = "14px system-ui";
+      ctx.fillStyle = "#cbd5f5";
+      ctx.fillText("Press Start / Restart or Space to try again", canvas.width / 2, canvas.height / 2 + 34);
+    }
+    ctx.restore();
+  }
+
+  // ----------- MAIN LOOP -----------
+  function loop(timestamp) {
+    if (!lastTime) lastTime = timestamp;
+    const dt = (timestamp - lastTime) / 1000;
+    lastTime = timestamp;
+
+    ctx.clearRect(0, 0, canvas.width, canvas.height);
+    drawArena();
+    update(dt);
+    drawEffects();
+    drawEnemies();
+    drawProjectiles();
+    drawPlayer();
+    drawOverlay();
+    requestAnimationFrame(loop);
+  }
+
+  // ----------- CONTROL FLOW -----------
+  function startGame() {
+    running = true;
+    paused = false;
+    resetGame();
+    showToast("Training begun");
+  }
+
+  function togglePause() {
+    if (!running || player.hp <= 0) return;
+    paused = !paused;
+  }
+
+  function gameOver() {
+    running = true; // keep overlay showing but stop updates via hp<=0
+    paused = false;
+    showToast("You were overwhelmed...");
+  }
+
+  startBtn.addEventListener("click", startGame);
+  pauseBtn.addEventListener("click", togglePause);
+
+  // initial state
+  resetGame();
+  requestAnimationFrame(loop);
+</script>
+</body>
+</html>
