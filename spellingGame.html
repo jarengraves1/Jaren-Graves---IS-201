@@ -1,0 +1,2796 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Spelling Practice Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    :root {
+      --bg: #f7f7f7;
+      --card-bg: #ffffff;
+      --accent: #2563eb;
+      --accent-soft: #dbeafe;
+      --danger: #b91c1c;
+      --success: #15803d;
+      --text-main: #111827;
+      --text-muted: #6b7280;
+      --border: #e5e7eb;
+    }
+
+    * {
+      box-sizing: border-box;
+    }
+
+    body {
+      margin: 0;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+      background: var(--bg);
+      color: var(--text-main);
+    }
+
+    .app {
+      max-width: 600px;
+      margin: 0 auto;
+      padding: 16px;
+    }
+
+    header {
+      margin-bottom: 12px;
+    }
+
+    h1 {
+      font-size: 1.4rem;
+      margin: 0 0 4px;
+      text-align: center;
+    }
+
+    .subtitle {
+      text-align: center;
+      font-size: 0.9rem;
+      color: var(--text-muted);
+    }
+
+    .card {
+      background: var(--card-bg);
+      border-radius: 12px;
+      padding: 12px 14px;
+      box-shadow: 0 4px 12px rgba(15, 23, 42, 0.04);
+      border: 1px solid var(--border);
+      margin-bottom: 12px;
+    }
+
+    .stats-grid {
+      display: grid;
+      grid-template-columns: repeat(3, minmax(0, 1fr));
+      gap: 8px;
+      font-size: 0.8rem;
+    }
+
+    .stat {
+      padding: 6px 8px;
+      border-radius: 8px;
+      background: #f9fafb;
+      border: 1px solid var(--border);
+      text-align: center;
+    }
+
+    .stat-label {
+      color: var(--text-muted);
+      font-size: 0.7rem;
+      margin-bottom: 2px;
+    }
+
+    .stat-value {
+      font-weight: 600;
+      font-size: 0.9rem;
+    }
+
+    .difficulty-row {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      gap: 8px;
+      flex-wrap: wrap;
+      font-size: 0.85rem;
+    }
+
+    .difficulty-label {
+      font-weight: 600;
+    }
+
+    .pill {
+      padding: 4px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      background: var(--accent-soft);
+      font-size: 0.8rem;
+    }
+
+    .controls-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-top: 8px;
+      align-items: center;
+      justify-content: flex-start;
+    }
+
+    button {
+      border-radius: 999px;
+      border: none;
+      padding: 8px 14px;
+      font-size: 0.9rem;
+      font-weight: 500;
+      cursor: pointer;
+      background: var(--accent);
+      color: #ffffff;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 6px;
+    }
+
+    button.secondary {
+      background: #e5e7eb;
+      color: #111827;
+    }
+
+    button.danger {
+      background: var(--danger);
+      color: #ffffff;
+    }
+
+    button:disabled {
+      opacity: 0.6;
+      cursor: default;
+    }
+
+    .toggle {
+      display: inline-flex;
+      align-items: center;
+      gap: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    input[type="checkbox"] {
+      width: 16px;
+      height: 16px;
+    }
+
+    select {
+      border-radius: 999px;
+      padding: 6px 10px;
+      border: 1px solid var(--border);
+      background: #ffffff;
+      font-size: 0.85rem;
+      outline: none;
+    }
+
+    select:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .round-card {
+      margin-top: 4px;
+    }
+
+    .word-instruction {
+      font-size: 0.9rem;
+      color: var(--text-muted);
+      margin-bottom: 6px;
+    }
+
+    .button-row {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    .input-row {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 8px;
+    }
+
+    input[type="text"] {
+      flex: 1;
+      padding: 8px 10px;
+      border-radius: 999px;
+      border: 1px solid var(--border);
+      font-size: 1rem;
+      outline: none;
+    }
+
+    input[type="text"]:focus {
+      border-color: var(--accent);
+      box-shadow: 0 0 0 1px var(--accent-soft);
+    }
+
+    .feedback {
+      font-size: 0.9rem;
+      min-height: 20px;
+    }
+
+    .feedback.success {
+      color: var(--success);
+    }
+
+    .feedback.error {
+      color: var(--danger);
+    }
+
+    .system-message {
+      margin-top: 4px;
+      font-size: 0.8rem;
+      color: var(--text-muted);
+    }
+
+    details {
+      margin-top: 8px;
+    }
+
+    summary {
+      cursor: pointer;
+      font-size: 0.9rem;
+      font-weight: 500;
+    }
+
+    #historyContent {
+      margin-top: 6px;
+      max-height: 260px;
+      overflow-y: auto;
+      border-top: 1px solid var(--border);
+      padding-top: 6px;
+      font-size: 0.8rem;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+    }
+
+    th, td {
+      padding: 4px 6px;
+      text-align: left;
+      border-bottom: 1px solid var(--border);
+    }
+
+    th {
+      font-size: 0.75rem;
+      color: var(--text-muted);
+      position: sticky;
+      top: 0;
+      background: var(--card-bg);
+    }
+
+    .word-text {
+      font-weight: 500;
+    }
+
+    @media (max-width: 480px) {
+      .card {
+        padding: 10px 10px;
+      }
+
+      .stats-grid {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+      }
+
+      .input-row {
+        flex-direction: column;
+      }
+
+      button {
+        width: 100%;
+        justify-content: center;
+      }
+
+      .button-row {
+        flex-direction: column;
+      }
+    }
+  </style>
+</head>
+<body>
+<div class="app">
+  <header>
+    <h1>Spelling Practice (Audio Only)</h1>
+    <div class="subtitle">30-word rounds · auto-progress difficulty · prioritize missed words · optional audio definitions</div>
+  </header>
+
+  <!-- STATS CARD -->
+  <div class="card">
+    <div class="stats-grid">
+      <div class="stat">
+        <div class="stat-label">Attempted</div>
+        <div class="stat-value" id="statAttempted">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Correct</div>
+        <div class="stat-value" id="statCorrect">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Incorrect</div>
+        <div class="stat-value" id="statIncorrect">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Accuracy</div>
+        <div class="stat-value" id="statAccuracy">0%</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Current streak</div>
+        <div class="stat-value" id="statStreak">0</div>
+      </div>
+      <div class="stat">
+        <div class="stat-label">Best streak</div>
+        <div class="stat-value" id="statBestStreak">0</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- DIFFICULTY / MODE CARD -->
+  <div class="card">
+    <div class="difficulty-row">
+      <div>
+        <div class="difficulty-label">
+          Difficulty: <span id="difficultyName">Very Easy</span>
+        </div>
+        <div class="subtitle" style="text-align:left;font-size:0.8rem;">
+          Level <span id="difficultyLevel">1</span> of 5
+        </div>
+      </div>
+      <span class="pill" id="roundInfo">Round not started</span>
+    </div>
+
+    <div class="controls-row">
+      <button id="startRoundBtn">Start</button>
+
+      <label class="toggle">
+        Level:
+        <select id="difficultySelect">
+          <option value="1">1 – Very Easy</option>
+          <option value="2">2 – Easy</option>
+          <option value="3">3 – Medium</option>
+          <option value="4">4 – Hard</option>
+          <option value="5">5 – Very Hard</option>
+        </select>
+      </label>
+
+      <label class="toggle">
+        <input type="checkbox" id="missedModeCheckbox" />
+        Practice missed words only
+      </label>
+    </div>
+    <div class="system-message" id="systemMessage">
+      Tip: Use headphones, listen carefully, then type the word exactly as you hear it.
+    </div>
+  </div>
+
+  <!-- ROUND / QUESTION CARD -->
+  <div class="card round-card">
+    <div class="word-instruction" id="wordInstruction">
+      Tap "Start" to begin. The word will be spoken, not shown.
+    </div>
+
+    <div class="button-row">
+      <button id="playWordBtn" class="secondary" disabled>🔊 Play word</button>
+      <button id="defineBtn" class="secondary" disabled>📖 Define</button>
+    </div>
+
+    <div class="input-row">
+      <input
+        type="text"
+        id="answerInput"
+        placeholder="Type the spelling here"
+        inputmode="text"
+        autocorrect="off"
+        autocapitalize="off"
+        spellcheck="false"
+        autocomplete="off"
+        disabled
+      />
+      <button id="checkBtn" disabled>Check</button>
+    </div>
+
+    <div class="button-row">
+      <button id="nextWordBtn" class="secondary" style="display:none;">Next word</button>
+    </div>
+
+    <div class="feedback" id="feedback"></div>
+  </div>
+
+  <!-- HISTORY CARD -->
+  <div class="card">
+    <details>
+      <summary>History / Missed words</summary>
+      <div style="margin-top:6px;display:flex;justify-content:space-between;align-items:center;gap:8px;">
+        <div class="system-message" style="margin-top:0;">
+          Shows how often you've seen and missed each word (across sessions).
+        </div>
+        <button id="resetStatsBtn" class="danger" style="flex-shrink:0;">Reset all data</button>
+      </div>
+      <div id="historyContent"></div>
+    </details>
+  </div>
+
+  <div class="system-message" id="speechWarning" style="margin-top:6px;"></div>
+</div>
+
+<script>
+  // ===============================
+  // CONFIGURATION + WORD LISTS
+  // ===============================
+
+  const STORAGE_KEY = "spellingGameV1";
+
+  const LEVEL_NAMES = {
+    1: "Very Easy",
+    2: "Easy",
+    3: "Medium",
+    4: "Hard",
+    5: "Very Hard",
+  };
+
+  const BASE_WORDS = {
+  1: [
+    "cat","dog","sun","run","hat","box","ball","book","pen","desk",
+    "chair","home","milk","bread","hand","foot","tree","bird","fish","apple",
+    "door","room","school","clock","water","house","street","car","bus","train",
+    "bag","shoe","coat","rain","snow","wind","day","night","bed","cake",
+    "cookie","egg","cheese","salad","fork","spoon","plate","glass","cup","toy",
+
+    "boy","girl","mom","dad","baby","aunt","uncle","grandma","grandpa","cousin",
+    "pig","cow","horse","duck","goat","sheep","chick","bear","lion","zoo",
+    "leaf","grass","plant","flower","root","seed","rock","sand","soil","hill",
+    "lake","river","pond","bridge","farm","field","yard","park","beach","camp",
+    "road","lane","path","trail","corner","store","shop","mall","city","town",
+    "pizza","soup","juice","fruit","grape","peach","pear","berry","banana","lemon",
+    "salt","sugar","jam","honey","syrup","candy","snack","lunch","dinner","meal",
+    "soap","towel","brush","comb","tooth","mouth","nose","ear","eye","hair",
+    "face","leg","arm","back","head","knee","toe","finger","thumb","heart",
+    "game","toy","doll","block","truck","train","plane","boat","balloon","kite",
+    "song","music","drum","piano","guitar","radio","movie","show","story","page",
+    "paper","note","list","card","stamp","coin","money","wallet","purse","key",
+    "doorway","gate","wall","floor","ceiling","roof","porch","stairs","hall","yard",
+    "clock","watch","alarm","bell","ring","line","dot","shape","color","mark",
+    "shirt","pants","dress","skirt","sock","belt","button","zipper","glove","scarf",
+    "snowman","sled","ice","frost","cloud","storm","fog","sky","star","moon",
+    "smile","laugh","cry","hug","kiss","help","share","thank","sorry","please",
+    "open","close","push","pull","lift","drop","jump","clap","wave","kick",
+    "sit","stand","walk","crawl","sleep","wake","yawn","stretch","drink","eat",
+    "read","write","draw","paint","build","fix","wash","clean","cook","bake",
+    "find","lose","get","give","hold","keep","throw","catch","send","call",
+    "under","over","near","far","left","right","up","down","in","out",
+    "hot","cold","warm","cool","small","big","short","tall","fast","slow",
+    "good","bad","kind","mean","easy","hard","full","empty","young","old",
+    "first","last","same","new","other","more","less","high","low","deep"
+  ],
+
+  2: [
+    "yellow","purple","orange","winter","summer","spring","autumn","family","parent","brother",
+    "sister","cousin","second","minute","hour","pencil","eraser","pocket","market","garden",
+    "window","mirror","shadow","animal","rabbit","turtle","thunder","lightning","ocean","island",
+    "forest","mountain","village","doctor","teacher","student","office","kitchen","bathroom","garage",
+    "holiday","birthday","picture","camera","message","answer","letter","number","people","friend",
+
+    "morning","evening","afternoon","weekday","weekend","calendar","season","weather","temperature","blanket",
+    "family","grandfather","grandmother","husband","wife","nephew","niece","relative","neighbor","visitor",
+    "notebook","backpack","marker","crayon","highlighter","stapler","scissors","binder","folder","locker",
+    "playground","library","cafeteria","hallway","classroom","teacher","student","principal","janitor","coach",
+    "station","airport","harbor","highway","bridge","tunnel","subway","traffic","engine","signal",
+    "village","country","capital","border","desert","valley","canyon","waterfall","meadow","prairie",
+    "kitchen","pantry","cupboard","counter","freezer","microwave","stovetop","recipe","apron","dishwasher",
+    "sandwich","cereal","yogurt","sausage","pancake","omelet","smoothie","pudding","cracker","pretzel",
+    "blanket","pillow","mattress","curtain","closet","drawer","carpet","cushion","lamp","mirror",
+    "bathroom","shower","bathtub","toilet","tissue","shampoo","conditioner","lotion","toothpaste","toothbrush",
+    "baseball","soccer","tennis","basketball","football","hockey","volleyball","swimming","skating","cycling",
+    "weekend","holiday","picnic","concert","theater","festival","parade","circus","museum","zoo",
+    "rabbit","hamster","guinea","parrot","goldfish","lizard","kitten","puppy","pony","donkey",
+    "thunderstorm","rainbow","earthquake","tornado","blizzard","hailstorm","drought","foggy","cloudy","breeze",
+    "painter","driver","builder","farmer","baker","waiter","artist","actor","singer","dancer",
+    "message","subject","reply","address","package","postcard","envelope","stamp","ticket","coupon",
+    "friendship","laughter","kindness","promise","secret","memory","worry","trouble","danger","safety",
+    "pocket","wallet","receipt","change","dollar","penny","nickel","quarter","credit","account",
+    "exercise","stretch","jogging","running","yoga","soccer","pushup","situp","cycling","hiking",
+    "playful","careful","fearful","joyful","helpful","thankful","hopeful","peaceful","cheerful","powerful",
+    "quickly","slowly","softly","loudly","brightly","darkly","neatly","roughly","nearly","barely",
+    "between","inside","outside","around","behind","beneath","within","without","toward","against",
+    "morning","sunrise","sunset","midnight","noonday","yesterday","today","tomorrow","weekend","weekday",
+    "borrow","return","follow","borrowed","visited","invited","refused","decided","imagined","noticed",
+    "sudden","silent","noisy","crowded","lonely","peaceful","distant","nearby","friendly","hostile",
+    "plastic","silver","copper","metal","cotton","leather","rubber","cardboard","concrete","marble",
+    "puzzle","riddle","answer","question","problem","pattern","picture","paragraph","chapter","series"
+  ],
+
+  3: [
+    "beautiful","favorite","language","country","travel","season","neighbor","remember","instead","although",
+    "already","sentence","paragraph","because","between","against","perhaps","hundred","thousand","minute",
+    "decision","example","reason","really","almost","history","library","college","different","special",
+    "danger","machine","energy","simple","future","circle","square","triangle","problem","answer",
+    "promise","personal","journey","whisper","between","mistake","perfect","wonder","curious","comfort",
+
+    "ability","accurate","achievement","activity","addition","adventure","agreement","amazing","analysis","ancient",
+    "announce","apparent","approach","argument","arrange","arrived","audience","average","balance","believe",
+    "biology","calendar","capital","careful","central","certain","challenge","character","chemical","citizen",
+    "classroom","clearly","collect","combine","compare","complete","complex","conclude","confident","conflict",
+    "control","creative","culture","current","daughter","decision","definite","describe","develop","difference",
+    "direction","discover","distance","education","effect","effort","emotion","encourage","engineer","enormous",
+    "evidence","exercise","experience","experiment","favorite","finally","freedom","frequent","general","generous",
+    "government","healthy","helpful","history","imagine","improve","include","increase","indicate","influence",
+    "information","important","interest","international","journey","justice","knowledge","language","laughter","library",
+    "location","machine","material","measure","memory","mention","method","moment","mountain","movement",
+    "musical","natural","necessary","nervous","nothing","notice","nutrition","opinion","ordinary","original",
+    "package","patient","pattern","peaceful","percent","personal","picture","planet","plastic","popular",
+    "possible","powerful","prepare","presence","pressure","primary","principal","process","produce","product",
+    "progress","project","promise","protect","purpose","quality","question","quietly","reaction","reality",
+    "receive","recently","recognize","relationship","religion","remember","remove","replace","report","require",
+    "respect","respond","restaurant","science","suddenly","suggest","support","suppose","surprise","surround",
+    "symbol","system","teacher","telephone","temperature","terrible","theater","thought","thunder","traffic",
+    "triangle","trouble","united","universe","usually","victory","village","visible","weather","weight",
+    "whisper","whistle","wonderful","wooden","worried","writing","yesterday","younger","yourself","zero",
+    "affection","argument","attention","audience","behavior","boundary","careless","chemical","comfortable","committee",
+    "community","complaint","confident","confusion","consequence","container","creative","criminal","critical","cultural",
+    "decision","delicate","democracy","delivery","dependent","describe","direction","discovery","distance","economy",
+    "education","electric","emotional","encounter","environment","equipment","essential","estimate","evidence","excellent",
+    "exchange","exercise","expensive","experience","facility","failure","familiar","festival","finance","foreign",
+    "frequent","furniture","generation","generous","global","gradual","illegal","immediate","industry","informal",
+    "injury","insect","instance","inspector","insurance","intelligent","journal","justice","laboratory","landscape",
+    "lecture","legal","liquid","literature","manager","marriage","material","medicine","military","minimum"
+  ],
+
+  4: [
+    "exercise","rhythm","chocolate","business","restaurant","grammar","temperature","necessary","separate","license",
+    "conscience","privilege","recommend","environment","government","immediately","knowledge","language","marriage","neighbor",
+    "calendar","category","definitely","embarrass","experiment","familiar","ignorance","interrupt","jewelry","colonel",
+    "vehicle","volunteer","yacht","anxious","campaign","champagne","committee","convenient","courageous","disappear",
+    "disappoint","hierarchy","maintenance","nuisance","psychology","schedule","technique","vacuum","weird","xylophone",
+
+    "accommodate","acknowledge","aggressive","amateur","apparent","argument","assassination","attendance","balloon","beginning",
+    "beneficial","brilliant","broccoli","bureau","cappuccino","category","cemetery","chauffeur","colleague","collision",
+    "commission","competent","compliment","comprehension","congratulate","connoisseur","consensus","controversy","convenience","correspondence",
+    "courageous","criticism","curriculum","decipher","dedicate","defendant","delicious","dependence","desperate","dilemma",
+    "disastrous","discipline","discrepancy","dissuade","drunkenness","ecosystem","efficiency","embarrassed","emigrant","emphasize",
+    "encyclopedia","enthusiastic","entrepreneur","exaggerate","exhaustion","existence","experience","expertise","fascinate","fluorescent",
+    "forfeit","forty","frequently","fulfill","gauge","glamorous","governmental","guarantee","harassment","hindrance",
+    "hypothesis","illegible","illicit","imagination","immediately","independent","indispensable","indictment","inevitable","inoculate",
+    "interrupt","irresistible","jealousy","legitimate","leisure","liaison","knowledgeable","millennium","miniature","mischievous",
+    "nevertheless","noticeable","occasionally","occurrence","omission","opportunity","parallel","parliament","perceive","permanent",
+    "perseverance","personnel","pharaoh","playwright","possession","precede","prejudice","privilege","pronunciation","propaganda",
+    "prosperous","publicly","questionnaire","quarantine","raspberry","receipt","recommendation","relevant","religious","reluctant",
+    "remembrance","reminiscent","repetition","republic","resistance","restaurant","rhythmical","sacrifice","safety","satisfactory",
+    "scarce","schedule","scissors","separate","sergeant","similar","sincerely","souvenir","specialty","strengthen",
+    "subsistence","subtle","successful","succession","sufficient","superintendent","supersede","surprise","surveillance","suspicious",
+    "tangible","technique","tendency","tournament","traffic","transition","treacherous","truly","twelfth","tyranny",
+    "unanimous","unnecessary","vacuum","vegetable","vicious","vocabulary","voluntary","warrant","weaponry","wholly",
+    "wield","withhold","yielding","youthful","zealous","zoology","accessible","adolescence","aerodynamic","aesthetic",
+    "allegiance","aluminum","annihilate","anonymous","applicable","approximate","articulate","assignment","assistance","auxiliary",
+    "belligerent","benevolent","buoyancy","camouflage","caterpillar","cautious","cerebral","circulation","coincidence","collaborate",
+    "colonial","conductor","confidential","conjunction","constituent","contagious","contaminant","continuous","corpse","cortical",
+    "credential","criterion","deficiency","delirious","denominator","development","diagnosis","dignitary","diplomacy","disastrous"
+  ],
+
+  5: [
+    "acquiesce","idiosyncrasy","juxtaposition","quintessential","sesquipedalian","onomatopoeia","mnemonic","hyperbole","anachronistic","conscientious",
+    "indistinguishable","paraphernalia","mischievous","reconnaissance","bureaucracy","pharaoh","hemorrhage","occurrence","supersede","inconsequential",
+    "magnanimous","metamorphosis","opalescent","pulchritude","quizzical","renegotiate","surreptitious","temerarious","ubiquitous","vicissitude",
+    "whimsical","xenophobia","yesteryear","zealous","circumlocution","disenfranchisement","enthusiastic","fortuitous","gregarious","hypothesis",
+    "indispensable","lieutenant","millennium","parliament","questionnaire","rendezvous","silhouette","troublesome","unanimous","vocabulary",
+
+    "acquittal","adjudicate","aegis","aestheticism","afficionado","aggrandizement","allegorical","amanuensis","anemone","antidisestablishmentarianism",
+    "apocryphal","approbation","archetypal","argy-bargy","asseveration","astigmatism","ataraxia","aureole","autochthonous","baccalaureate",
+    "bellwether","bourgeoisie","boustrophedon","braggadocio","cacophony","callipygian","candelabrum","capricious","catachresis","catastrophe",
+    "caterwaul","chiaroscuro","circumambient","claustrophobia","cognizant","commensurate","compunction","concatenation","concupiscence","contumacious",
+    "contrapositive","corporeal","corroborate","crepuscular","cryptography","cynosure","defenestration","deleterious","demagogue","denouement",
+    "depredation","desideratum","desuetude","diaphanous","dichotomy","didactic","discombobulate","disquisition","dodecahedron","ebullient",
+    "eclectic","effervescence","egregious","eleemosynary","elidescent","ellipsis","embouchure","encomium","enervate","ensconce",
+    "entomology","ephemeral","epistemology","equanimity","equivocate","erstwhile","esoteric","euphemism","euphonious","exacerbate",
+    "excoriate","execrable","existential","expeditious","extemporaneous","facetious","fallacious","farrago","fastidious","felicitous",
+    "floccinaucinihilipilification","grandiloquent","harangue","hederaceous","hemidemisemiquaver","heterogeneous","heuristic","histrionic","homogeneous","iconoclast",
+    "idempotent","ignominious","illimitable","immiscible","immutable","impecunious","impervious","imperturbable","improvident","incommunicado",
+    "incontrovertible","indefatigable","indomitable","ineluctable","ineffable","inexplicable","inimitable","inscrutable","insouciant","interlocutor",
+    "intrepid","inure","inveterate","iridescent","irrevocable","labyrinthine","lackadaisical","lagniappe","lachrymose","legerdemain",
+    "loquacious","lugubrious","machiavellian","malfeasance","mellifluous","meretricious","metallurgy","metempsychosis","metonymy","microcosm",
+    "monolithic","moribund","myrmidon","mythopoeic","nebulous","nefarious","neolithic","neologism","nonchalant","obfuscate",
+    "obstreperous","obstreperously","obsequious","obstreperousness","odiferous","officious","omniscient","onomastic","ossification","ostensible",
+    "ostentatious","oxymoronic","palimpsest","panegyric","paradigmatic","parallax","paramountcy","parapet","parsimony","pejorative",
+    "penultimate","perfunctory","peripatetic","pernicious","perturbation","philanthropic","philharmonic","phlegmatic","phosphorescent","photolithography",
+    "plaintiff","plenipotentiary","plethora","portmanteau","posthumous","prestidigitation","preternatural","prognosticate","prolegomenon","propitiation",
+    "proselytize","protean","pseudonymous","psephology","pugnacious","pulverulent","quattrocento","quixotic","recalcitrant","reconnoiter",
+    "redoubtable","refulgent","relevant","remonstrate","requisition","resplendent","restitution","reverberation","rhapsodic","risorgimento",
+    "salubrious","sartorial","scintillate","sclerotic","scrupulous","serendipity","simulacrum","solipsistic","somnambulism","soporific",
+    "subcutaneous","subterranean","supercilious","supererogatory","superfluous","sycophant","symbiosis","syncretism","syzygy","teleological",
+    "temerity","terpsichorean","thaumaturgy","tintinnabulation","torpid","truculent","ubiquity","usufruct","uxorious","verisimilitude",
+    "viceregal","vinculum","vituperative","zeitgeist","zeugma","ziggurat","zygomorphic","xenotransplantation","xylotomous","yesternight"
+  ]
+};
+
+
+  function expandToLength(baseArray, targetLength) {
+    const result = [];
+    if (!baseArray || baseArray.length === 0) return result;
+    let i = 0;
+    while (result.length < targetLength) {
+      result.push(baseArray[i % baseArray.length]);
+      i++;
+    }
+    return result;
+  }
+
+  const WORDS = {
+    1: expandToLength(BASE_WORDS[1], 300),
+    2: expandToLength(BASE_WORDS[2], 300),
+    3: expandToLength(BASE_WORDS[3], 300),
+    4: expandToLength(BASE_WORDS[4], 300),
+    5: expandToLength(BASE_WORDS[5], 300),
+  };
+
+  // Short, built-in definitions for base words (extended list reuses them)
+  const DEFINITIONS = {
+    // Level 1
+    cat: "A small domesticated animal that often catches mice.",
+    dog: "A common pet known for loyalty.",
+    sun: "The star that gives Earth light and heat.",
+    run: "To move quickly on foot.",
+    hat: "A covering worn on the head.",
+    box: "A container with flat sides and a lid.",
+    ball: "A round object used in games and sports.",
+    book: "A set of written or printed pages bound together.",
+    pen: "A tool used for writing with ink.",
+    desk: "A table used for working or studying.",
+    chair: "A seat for one person with a back.",
+    home: "The place where someone lives.",
+    milk: "A white liquid produced by mammals and used as food.",
+    bread: "A baked food made from flour and yeast.",
+    hand: "The end part of the arm with fingers.",
+    foot: "The lower part of the leg used for standing and walking.",
+    tree: "A tall plant with a trunk, branches, and leaves.",
+    bird: "An animal with feathers and wings.",
+    fish: "An animal that lives in water and breathes with gills.",
+    apple: "A round fruit with red, green, or yellow skin.",
+    door: "A movable panel used to open or close an entrance.",
+    room: "A space in a building separated by walls.",
+    school: "A place where people go to learn.",
+    clock: "A device that measures and shows time.",
+    water: "A clear liquid essential for life.",
+    house: "A building where people live.",
+    street: "A public road in a town or city.",
+    car: "A four-wheeled vehicle used for travel.",
+    bus: "A large vehicle that carries many passengers.",
+    train: "A connected series of rail vehicles for transportation.",
+    bag: "A container used for carrying items.",
+    shoe: "A covering worn on the foot.",
+    coat: "A warm outer layer of clothing.",
+    rain: "Water drops that fall from clouds.",
+    snow: "Frozen water crystals that fall from the sky.",
+    wind: "Moving air you can feel.",
+    day: "The time when it is light outside.",
+    night: "The time when it is dark outside.",
+    bed: "A piece of furniture used for sleeping.",
+    cake: "A sweet baked dessert.",
+    cookie: "A small sweet baked treat.",
+    egg: "A round food laid by birds, often eaten as part of meals.",
+    cheese: "A solid dairy food made from milk.",
+    salad: "A dish of raw vegetables, sometimes with dressing.",
+    fork: "An eating utensil with prongs.",
+    spoon: "An eating utensil with a rounded bowl.",
+    plate: "A flat dish used for serving food.",
+    glass: "A transparent cup for drinking.",
+    cup: "A small container used for drinking.",
+    toy: "An object for children to play with.",
+    boy: "A male child.",
+    girl: "A female child.",
+    mom: "A mother.",
+    dad: "A father.",
+    baby: "A very young child or infant.",
+    aunt: "The sister of your parent or your parent's sister-in-law.",
+    uncle: "The brother of your parent or your parent's brother-in-law.",
+    grandma: "The mother of your parent.",
+    grandpa: "The father of your parent.",
+    cousin: "The child of your aunt or uncle.",
+    pig: "A farm animal with a snout that enjoys mud.",
+    cow: "A large farm animal that produces milk.",
+    horse: "A large animal people often ride.",
+    duck: "A water bird with a broad bill.",
+    goat: "A farm animal with horns known for climbing.",
+    sheep: "A wool-producing farm animal.",
+    chick: "A baby chicken.",
+    bear: "A large furry animal found in forests.",
+    lion: "A large wild cat known as the 'king of the jungle.'",
+    zoo: "A place where animals are kept for people to see.",
+    leaf: "A flat green part of a plant that grows from a stem.",
+    grass: "Short green plants that grow on the ground.",
+    plant: "A living thing that grows in soil and uses sunlight.",
+    flower: "The colorful part of a plant that produces seeds.",
+    root: "The part of a plant that grows underground.",
+    seed: "A small object from which a plant can grow.",
+    rock: "A solid piece of natural stone.",
+    sand: "Tiny grains of rock found on beaches or deserts.",
+    soil: "Earth used for growing plants.",
+    hill: "A raised area of land smaller than a mountain.",
+    lake: "A large body of fresh water surrounded by land.",
+    river: "A long, flowing body of water.",
+    pond: "A small, still body of water.",
+    bridge: "A structure built to cross over something.",
+    farm: "Land used for growing crops or raising animals.",
+    field: "An open area of land, often for farming.",
+    yard: "An outdoor area next to a building.",
+    park: "A public area with grass and trees for recreation.",
+    beach: "The sandy or rocky edge of a body of water.",
+    camp: "A place where people stay outdoors in tents.",
+    road: "A path for vehicles to travel on.",
+    lane: "A narrow road or pathway.",
+    path: "A track worn by people or animals.",
+    trail: "A marked route through nature for walking.",
+    corner: "The point where two edges or streets meet.",
+    store: "A place where goods are bought and sold.",
+    shop: "A small store where items are sold.",
+    mall: "A large building with many stores.",
+    city: "A large town with many buildings and people.",
+    town: "A community smaller than a city.",
+    pizza: "A baked dish with crust, sauce, and cheese.",
+    soup: "A hot liquid food often made with vegetables or meat.",
+    juice: "A drink made from squeezed fruits or vegetables.",
+    fruit: "A sweet plant food that has seeds.",
+    grape: "A small, sweet fruit that grows in bunches.",
+    peach: "A soft fruit with fuzzy skin.",
+    pear: "A sweet fruit with a narrow top and wide bottom.",
+    berry: "A small juicy fruit like a strawberry or blueberry.",
+    banana: "A long curved fruit with yellow skin.",
+    lemon: "A yellow sour fruit.",
+    salt: "A mineral used to flavor food.",
+    sugar: "A sweet substance used in cooking and baking.",
+    jam: "A sweet spread made from fruit.",
+    honey: "A sweet substance made by bees.",
+    syrup: "A thick sweet liquid.",
+    candy: "A sweet treat often made with sugar.",
+    snack: "A small amount of food eaten between meals.",
+    lunch: "The meal eaten in the middle of the day.",
+    dinner: "The meal eaten in the evening.",
+    meal: "Food eaten at a regular time.",
+    soap: "A substance used for washing.",
+    towel: "A cloth used for drying.",
+    brush: "A tool with bristles used for cleaning or grooming.",
+    comb: "A tool with teeth used to arrange hair.",
+    tooth: "A hard structure in the mouth used for biting.",
+    mouth: "The opening on the face used for eating and speaking.",
+    nose: "The part of the face used for smelling and breathing.",
+    ear: "The part of the body used for hearing.",
+    eye: "The body part used for seeing.",
+    hair: "The strands growing from the skin, especially on the head.",
+    face: "The front part of the head.",
+    leg: "A limb used for standing and walking.",
+    arm: "A limb used for holding and lifting.",
+    back: "The rear part of the body from shoulders to hips.",
+    head: "The top part of the body containing the brain and face.",
+    knee: "The joint between the thigh and lower leg.",
+    toe: "One of the digits of the foot.",
+    finger: "One of the digits of the hand.",
+    thumb: "The short, thick first finger of the hand.",
+    heart: "The organ that pumps blood.",
+    game: "An activity people do for fun.",
+    doll: "A toy that looks like a person.",
+    block: "A solid piece of material often used for building.",
+    truck: "A large vehicle used to carry loads.",
+    plane: "A flying vehicle with wings.",
+    boat: "A vehicle used to travel on water.",
+    balloon: "A flexible bag filled with air or gas.",
+    kite: "A light frame with cloth flown in the wind.",
+    song: "A piece of music with words.",
+    music: "Sounds arranged in a pleasing way.",
+    drum: "A musical instrument you hit to make sound.",
+    piano: "A musical instrument played by pressing keys.",
+    guitar: "A stringed musical instrument played with fingers.",
+    radio: "A device that plays audio broadcasts.",
+    movie: "A film shown on a screen.",
+    show: "A performance or program people watch.",
+    story: "A tale or narrative about events.",
+    page: "One side of a sheet in a book.",
+    paper: "Thin material used for writing or printing.",
+    note: "A short written message.",
+    list: "A series of items written down.",
+    card: "A small piece of thick paper.",
+    stamp: "A small sticker used to mail letters.",
+    coin: "A small piece of metal money.",
+    money: "Currency used to buy things.",
+    wallet: "A small case for holding money and cards.",
+    purse: "A bag used to carry personal items.",
+    key: "A small object used to lock or unlock something.",
+    doorway: "The entrance to a room or building.",
+    gate: "A movable barrier in a fence or wall.",
+    wall: "A vertical structure enclosing or dividing space.",
+    floor: "The surface you walk on inside a room.",
+    ceiling: "The overhead inside surface of a room.",
+    roof: "The top covering of a building.",
+    porch: "A covered area at a building's entrance.",
+    stairs: "A set of steps used to go up or down.",
+    hall: "A passage inside a building.",
+    yard: "An outdoor area surrounding a house.",
+    watch: "A small clock worn on the wrist.",
+    alarm: "A sound or signal that warns or wakes.",
+    bell: "A hollow object that makes a ringing sound.",
+    ring: "A circular band worn on the finger.",
+    line: "A long thin mark or path.",
+    dot: "A small round mark.",
+    shape: "The outline of an object.",
+    color: "A visual appearance like red, blue, or green.",
+    mark: "A visible impression or sign.",
+    shirt: "A piece of clothing worn on the upper body.",
+    pants: "Clothing worn on the legs.",
+    dress: "A piece of clothing worn by women or girls.",
+    skirt: "A lower-body garment that hangs from the waist.",
+    sock: "A soft covering for the foot.",
+    belt: "A band worn around the waist.",
+    button: "A small fastener used to close clothing.",
+    zipper: "A device used to fasten or unfasten clothing.",
+    glove: "A covering for the hand.",
+    scarf: "A cloth worn around the neck for warmth.",
+    snowman: "A figure made of stacked snow balls.",
+    sled: "A small vehicle for sliding on snow.",
+    ice: "Frozen water.",
+    frost: "A thin layer of ice crystals.",
+    cloud: "A mass of tiny water droplets in the sky.",
+    storm: "Bad weather with wind, rain, or thunder.",
+    fog: "Thick mist that makes it hard to see.",
+    sky: "The space above Earth.",
+    star: "A bright object in the night sky.",
+    moon: "The natural satellite of Earth.",
+    smile: "A happy expression of the face.",
+    laugh: "To make a happy sound when something is funny.",
+    cry: "To shed tears, often from sadness.",
+    hug: "To hold someone closely with your arms.",
+    kiss: "To touch with the lips as a sign of affection.",
+    help: "To give assistance.",
+    share: "To give part of something to someone else.",
+    thank: "To express gratitude.",
+    sorry: "To express regret.",
+    please: "A polite word used when asking for something.",
+    open: "To move something so it is not closed.",
+    close: "To move something so it is shut.",
+    push: "To move something away from you.",
+    pull: "To draw something toward you.",
+    lift: "To raise something upward.",
+    drop: "To let something fall.",
+    jump: "To push off the ground using your legs.",
+    clap: "To strike hands together to make noise.",
+    wave: "To move your hand back and forth in greeting.",
+    kick: "To hit something with your foot.",
+    sit: "To rest with your body supported on a chair or ground.",
+    stand: "To be upright on your feet.",
+    walk: "To move by taking steps.",
+    crawl: "To move on hands and knees.",
+    sleep: "To rest with your eyes closed.",
+    wake: "To stop sleeping.",
+    yawn: "To open your mouth wide when tired.",
+    stretch: "To extend your body or limbs.",
+    drink: "To take liquid into your mouth and swallow.",
+    eat: "To take food into your mouth and swallow.",
+    read: "To look at and understand written words.",
+    write: "To form letters or words on paper.",
+    draw: "To make pictures with lines.",
+    paint: "To create images using colored liquid.",
+    build: "To make something by putting parts together.",
+    fix: "To repair something.",
+    wash: "To clean with water and soap.",
+    clean: "To remove dirt from something.",
+    cook: "To prepare food with heat.",
+    bake: "To cook in an oven.",
+    find: "To discover something that was lost.",
+    lose: "To no longer have something.",
+    get: "To obtain something.",
+    give: "To hand something to someone else.",
+    hold: "To grip something with your hands.",
+    keep: "To retain something.",
+    throw: "To send something through the air with your hand.",
+    catch: "To grab something moving through the air.",
+    send: "To cause something to go somewhere.",
+    call: "To speak to someone by phone or shout their name.",
+    under: "Below something.",
+    over: "Above something.",
+    near: "Close to something.",
+    far: "A long distance away.",
+    left: "The opposite of right.",
+    right: "The opposite of left.",
+    up: "Toward a higher place.",
+    down: "Toward a lower place.",
+    in: "Inside something.",
+    out: "Outside something.",
+    hot: "Having a high temperature.",
+    cold: "Having a low temperature.",
+    warm: "Slightly hot.",
+    cool: "Slightly cold.",
+    small: "Little in size.",
+    big: "Large in size.",
+    short: "Not tall or not long.",
+    tall: "Having great height.",
+    fast: "Moving quickly.",
+    slow: "Moving with little speed.",
+    good: "Of high quality; nice.",
+    bad: "Not good; unpleasant.",
+    kind: "Friendly and caring.",
+    mean: "Unkind or hurtful.",
+    easy: "Not difficult.",
+    hard: "Difficult to do.",
+    full: "Containing as much as possible.",
+    empty: "Containing nothing.",
+    young: "Not old.",
+    old: "Having lived for a long time.",
+    first: "Coming before all others.",
+    last: "Coming after all others.",
+    same: "Not different.",
+    new: "Recently created or obtained.",
+    other: "Different from the one mentioned.",
+    more: "A greater amount.",
+    less: "A smaller amount.",
+    high: "Tall or elevated.",
+    low: "Not high; near the ground.",
+    deep: "Extending far down below the surface.",
+    // Level 2
+    yellow: "A bright color like the sun or a banana.",
+    purple: "A color made by mixing red and blue.",
+    orange: "A color between red and yellow; also a citrus fruit.",
+    winter: "The coldest season of the year.",
+    summer: "The hottest season of the year.",
+    spring: "The season when plants begin to grow.",
+    autumn: "The season when leaves fall; also called fall.",
+    family: "A group of related people.",
+    parent: "A mother or father.",
+    brother: "A male sibling.",
+    sister: "A female sibling.",
+    cousin: "A child of your aunt or uncle.",
+    second: "One sixtieth of a minute.",
+    minute: "A unit of time equal to sixty seconds.",
+    hour: "A unit of time equal to sixty minutes.",
+    pencil: "A tool used for writing or drawing with graphite.",
+    eraser: "A tool used to remove pencil marks.",
+    pocket: "A small pouch in clothing for holding items.",
+    market: "A place where people buy and sell goods.",
+    garden: "A place where plants, flowers, or vegetables grow.",
+    window: "An opening in a wall that lets in light and air.",
+    mirror: "A surface that reflects an image.",
+    shadow: "A dark shape made when something blocks light.",
+    animal: "A living creature that is not a plant.",
+    rabbit: "A small mammal with long ears that hops.",
+    turtle: "A slow-moving animal with a hard shell.",
+    thunder: "The loud sound that follows lightning.",
+    lightning: "A bright flash of electricity in the sky.",
+    ocean: "A very large body of salt water.",
+    island: "Land completely surrounded by water.",
+    forest: "A large area filled with trees.",
+    mountain: "A very tall, steep area of land.",
+    village: "A small community of homes and people.",
+    doctor: "A person trained to treat illnesses and injuries.",
+    teacher: "A person who helps others learn.",
+    student: "A person who studies at a school.",
+    office: "A place where people work at desks.",
+    kitchen: "A room used for cooking food.",
+    bathroom: "A room with a toilet and usually a sink or shower.",
+    garage: "A room or building used to park vehicles.",
+    holiday: "A special day of celebration or rest.",
+    birthday: "The anniversary of the day someone was born.",
+    picture: "An image made by drawing, painting, or photographing.",
+    camera: "A device used to take pictures.",
+    message: "Information sent from one person to another.",
+    answer: "A reply or solution to a question.",
+    letter: "A written message sent to someone.",
+    number: "A symbol that shows quantity.",
+    people: "Human beings in general or as a group.",
+    friend: "A person you know well and like.",
+    morning: "The early part of the day before noon.",
+    evening: "The part of the day after sunset.",
+    afternoon: "The time between noon and evening.",
+    weekday: "Any day from Monday to Friday.",
+    weekend: "Saturday and Sunday.",
+    calendar: "A chart showing days, weeks, and months.",
+    weather: "The condition of the air at a place and time.",
+    temperature: "How hot or cold something is.",
+    blanket: "A warm cloth used for covering.",
+    grandfather: "The father of your parent.",
+    grandmother: "The mother of your parent.",
+    husband: "A married man.",
+    wife: "A married woman.",
+    nephew: "The son of your sibling.",
+    niece: "The daughter of your sibling.",
+    relative: "A family member.",
+    neighbor: "A person who lives near you.",
+    visitor: "Someone who comes to see a person or place.",
+    notebook: "A book of blank pages for writing.",
+    backpack: "A bag carried on the back.",
+    marker: "A pen with a bold, colored tip.",
+    crayon: "A colored stick used for drawing.",
+    highlighter: "A pen used to mark important text.",
+    stapler: "A tool used to fasten papers together.",
+    scissors: "A tool with two blades for cutting.",
+    binder: "A folder that holds papers together.",
+    folder: "A thin cover used to hold papers.",
+    locker: "A small storage compartment with a lock.",
+    playground: "An outdoor area with equipment for children.",
+    library: "A place with books and materials for reading.",
+    cafeteria: "A place where people get food at school or work.",
+    hallway: "A long corridor in a building.",
+    classroom: "A room where students learn.",
+    principal: "The leader of a school.",
+    janitor: "A person who cleans and maintains a building.",
+    coach: "A person who trains athletes or teams.",
+    station: "A place where trains, buses, or vehicles stop.",
+    airport: "A place where airplanes land and take off.",
+    harbor: "A sheltered area for ships and boats.",
+    highway: "A major road for fast travel.",
+    bridge: "A structure built to cross over something.",
+    tunnel: "A passage under or through something.",
+    subway: "An underground train system.",
+    traffic: "Vehicles moving along a road.",
+    engine: "A machine that provides power.",
+    signal: "A sign or sound that gives information.",
+    country: "A nation with its own government.",
+    capital: "The city where a country's government is located.",
+    border: "A line separating two areas or countries.",
+    desert: "A dry area with little rainfall.",
+    valley: "A low area between hills or mountains.",
+    canyon: "A deep, narrow valley with steep sides.",
+    waterfall: "Water falling over a cliff.",
+    meadow: "A field of grass and wildflowers.",
+    prairie: "A large open area of grassland.",
+    pantry: "A small room where food is stored.",
+    cupboard: "A cabinet used for storing dishes or food.",
+    counter: "A flat surface used for preparing food.",
+    freezer: "A cold appliance used to store frozen food.",
+    microwave: "A device that heats food quickly.",
+    stovetop: "The top surface of a stove for cooking.",
+    recipe: "Instructions for preparing a dish.",
+    apron: "A cloth worn to protect clothing while cooking.",
+    dishwasher: "A machine that cleans dishes.",
+    sandwich: "Two slices of bread with filling between them.",
+    cereal: "A breakfast food made from grains.",
+    yogurt: "A creamy food made from milk.",
+    sausage: "Seasoned meat shaped into a tube.",
+    pancake: "A flat round bread cooked on a pan.",
+    omelet: "Eggs cooked flat and folded with fillings.",
+    smoothie: "A blended drink made from fruit.",
+    pudding: "A soft, sweet dessert.",
+    cracker: "A thin, crisp baked snack.",
+    pretzel: "A baked snack twisted into a knot shape.",
+    pillow: "A soft cushion for resting your head.",
+    mattress: "A large pad used for sleeping.",
+    curtain: "A cloth used to cover windows.",
+    closet: "A small room or space for storing clothes.",
+    drawer: "A sliding storage box in furniture.",
+    carpet: "A floor covering made of thick fabric.",
+    cushion: "A soft pad for sitting or leaning on.",
+    lamp: "A device that gives light.",
+    shower: "A place where water sprays for washing.",
+    bathtub: "A large container for bathing.",
+    toilet: "A bowl used for disposing of waste.",
+    tissue: "Soft paper used for blowing the nose.",
+    shampoo: "Soap for washing hair.",
+    conditioner: "A product used to soften hair.",
+    lotion: "A cream used to moisturize skin.",
+    toothpaste: "A paste used for cleaning teeth.",
+    toothbrush: "A brush for cleaning teeth.",
+    baseball: "A sport played with a bat and ball.",
+    soccer: "A sport where players kick a ball into a goal.",
+    tennis: "A sport played by hitting a ball with a racket.",
+    basketball: "A sport where players shoot a ball into a hoop.",
+    football: "A team sport played with an oval ball.",
+    hockey: "A sport played on ice or field with sticks.",
+    volleyball: "A sport where teams hit a ball over a net.",
+    swimming: "Moving through water using arms and legs.",
+    skating: "Moving on ice or wheels with skates.",
+    cycling: "Riding a bicycle.",
+    picnic: "A meal eaten outdoors.",
+    concert: "A live music performance.",
+    theater: "A place where plays and shows are performed.",
+    festival: "A celebration with events or activities.",
+    parade: "A public procession with floats or performers.",
+    circus: "A show with clowns, animals, and performers.",
+    museum: "A place where objects of interest are displayed.",
+    zoo: "A place where animals are kept for people to see.",
+    hamster: "A small rodent kept as a pet.",
+    guinea: "Short for guinea pig, a small rodent pet.",
+    parrot: "A colorful bird that can mimic sounds.",
+    goldfish: "A small orange fish often kept as a pet.",
+    lizard: "A reptile with scales and four legs.",
+    kitten: "A young cat.",
+    puppy: "A young dog.",
+    pony: "A small horse.",
+    donkey: "A sturdy animal related to horses.",
+    thunderstorm: "A storm with thunder and lightning.",
+    rainbow: "A curved band of colors seen after rain.",
+    earthquake: "A shaking of the ground.",
+    tornado: "A rotating column of air from a storm.",
+    blizzard: "A severe snowstorm.",
+    hailstorm: "A storm with frozen ice balls.",
+    drought: "A long period with little or no rain.",
+    foggy: "Filled with thick mist.",
+    cloudy: "Covered with clouds.",
+    breeze: "A light wind.",
+    painter: "A person who paints pictures or walls.",
+    driver: "A person who operates a vehicle.",
+    builder: "A person who constructs buildings.",
+    farmer: "A person who grows crops or raises animals.",
+    baker: "A person who makes bread and pastries.",
+    waiter: "A person who serves food at a restaurant.",
+    artist: "Someone who creates art.",
+    actor: "A person who performs in plays or movies.",
+    singer: "A person who sings.",
+    dancer: "A person who dances.",
+    subject: "The topic of something spoken or written.",
+    reply: "A response to a message.",
+    address: "A place where someone lives.",
+    package: "A wrapped parcel or box.",
+    postcard: "A card sent by mail without an envelope.",
+    envelope: "A paper container for a letter.",
+    ticket: "A pass allowing entry or travel.",
+    coupon: "A slip offering a discount.",
+    friendship: "A close relationship between friends.",
+    laughter: "The sound of someone laughing.",
+    kindness: "Being friendly and caring.",
+    promise: "A statement that you will do something.",
+    secret: "Something not told to others.",
+    memory: "Something remembered.",
+    worry: "To feel anxious about something.",
+    trouble: "Difficulty or problems.",
+    danger: "The possibility of harm.",
+    safety: "Protection from harm.",
+    receipt: "A paper showing what was bought and paid.",
+    change: "Money returned when payment is more than the cost.",
+    dollar: "Basic unit of money in the U.S.",
+    penny: "A coin worth one cent.",
+    nickel: "A coin worth five cents.",
+    quarter: "A coin worth twenty-five cents.",
+    credit: "Money available to borrow or spend later.",
+    account: "A record of money kept or spent.",
+    exercise: "Activity that improves fitness.",
+    stretch: "To extend muscles or limbs.",
+    jogging: "Running at a steady, gentle pace.",
+    yoga: "A form of exercise involving stretches and poses.",
+    pushup: "An exercise where you push your body up and down.",
+    situp: "An exercise for strengthening the stomach muscles.",
+    hiking: "Walking long distances outdoors.",
+    playful: "Full of fun and games.",
+    careful: "Taking care to avoid mistakes.",
+    fearful: "Full of fear.",
+    joyful: "Full of happiness.",
+    helpful: "Willing to assist.",
+    thankful: "Feeling gratitude.",
+    hopeful: "Feeling that good things will come.",
+    peaceful: "Calm and quiet.",
+    cheerful: "Happy and positive.",
+    powerful: "Having great strength or influence.",
+    quickly: "At a fast speed.",
+    slowly: "Not quickly.",
+    softly: "In a gentle or quiet way.",
+    loudly: "In a strong or noisy way.",
+    brightly: "With much light.",
+    darkly: "With little or no light.",
+    neatly: "In a clean and organized way.",
+    roughly: "Not gently; in a harsh way.",
+    nearly: "Almost but not completely.",
+    barely: "Only just; hardly.",
+    inside: "Within something.",
+    outside: "Not inside; in the open air.",
+    around: "On all sides of something.",
+    behind: "At the back of something.",
+    beneath: "Directly under something.",
+    within: "Inside the limits of something.",
+    without: "Not having something.",
+    toward: "In the direction of something.",
+    against: "Opposed to or touching something.",
+    sunrise: "When the sun appears in the morning.",
+    sunset: "When the sun disappears in the evening.",
+    midnight: "Twelve o'clock at night.",
+    noonday: "Twelve o'clock in the day; midday.",
+    yesterday: "The day before today.",
+    today: "The current day.",
+    tomorrow: "The day after today.",
+    borrow: "To take something and return it later.",
+    return: "To give something back.",
+    follow: "To go after someone or something.",
+    visited: "Went to see a person or place.",
+    invited: "Asked someone to join or come.",
+    refused: "Said no to something.",
+    decided: "Made a choice.",
+    imagined: "Formed a picture or idea in your mind.",
+    noticed: "Saw or became aware of something.",
+    sudden: "Happening quickly and unexpectedly.",
+    silent: "Very quiet; without sound.",
+    noisy: "Full of loud sounds.",
+    crowded: "Full of many people or things.",
+    lonely: "Feeling alone or isolated.",
+    peaceful: "Calm and quiet.",
+    distant: "Far away.",
+    nearby: "Close in distance.",
+    friendly: "Kind and pleasant.",
+    hostile: "Unfriendly or aggressive.",
+    plastic: "A man-made material used in many objects.",
+    silver: "A shiny gray metal.",
+    copper: "A reddish-brown metal.",
+    metal: "A hard, shiny material that conducts heat.",
+    cotton: "Soft white fiber used for fabric.",
+    leather: "Material made from animal skin.",
+    rubber: "A flexible material used in many products.",
+    cardboard: "Thick paper material used for boxes.",
+    concrete: "A hard building material.",
+    marble: "A smooth stone used in buildings.",
+    puzzle: "A game or problem requiring thought to solve.",
+    riddle: "A question or phrase needing creative thought to answer.",
+    question: "Something asked to get information.",
+    problem: "Something difficult that needs a solution.",
+    picture: "A visual representation of something.",
+    paragraph: "A group of related sentences in writing.",
+    chapter: "A main section of a book.",
+    series: "A group of related things in a set or order.",
+    // Level 3
+    beautiful: "Very pleasing to see, hear, or experience.",
+    favorite: "Most liked out of all choices.",
+    language: "The system of words and grammar a group of people uses to communicate.",
+    country: "A nation with its own government and borders.",
+    travel: "To go from one place to another.",
+    season: "One of the four parts of the year, such as winter or summer.",
+    neighbor: "A person who lives near you.",
+    remember: "To bring something back into your mind.",
+    instead: "In place of something else.",
+    although: "Even though; in spite of something.",
+    already: "Before now or sooner than expected.",
+    sentence: "A group of words that expresses a complete thought.",
+    paragraph: "A group of sentences about one idea.",
+    because: "For the reason that something happened.",
+    between: "In the space separating two things.",
+    against: "Opposed to something; touching or hitting something.",
+    perhaps: "Possibly; maybe.",
+    hundred: "The number 100.",
+    thousand: "The number 1,000.",
+    minute: "A unit of time equal to sixty seconds.",
+    decision: "A choice made after thinking.",
+    example: "Something that shows what something is like.",
+    reason: "The explanation for why something happens.",
+    really: "Truly; actually.",
+    almost: "Nearly; close to happening.",
+    history: "The study of past events.",
+    library: "A place where books and materials are kept for reading or borrowing.",
+    college: "A school for advanced education after high school.",
+    different: "Not the same as something else.",
+    special: "Unusual or better than normal.",
+    danger: "The possibility of harm or trouble.",
+    machine: "A device with moving parts that does work.",
+    energy: "Power used to make things move or work.",
+    simple: "Easy to understand; not complicated.",
+    future: "The time that has not yet come.",
+    circle: "A round shape with all points the same distance from the center.",
+    square: "A shape with four equal sides and four right angles.",
+    triangle: "A shape with three sides and three angles.",
+    problem: "Something difficult that needs a solution.",
+    answer: "A response or solution to a question.",
+    promise: "A statement that you will do or not do something.",
+    personal: "Related to one individual.",
+    journey: "A trip from one place to another.",
+    whisper: "To speak very softly.",
+    mistake: "Something done incorrectly or wrongly.",
+    perfect: "Without any errors; as good as possible.",
+    wonder: "To think with curiosity about something.",
+    curious: "Wanting to learn or know more.",
+    comfort: "A state of physical or emotional ease.",
+
+    ability: "The power or skill to do something.",
+    accurate: "Correct and free from mistakes.",
+    achievement: "Something successfully completed.",
+    activity: "Something that people do for work or enjoyment.",
+    addition: "The process of adding numbers or items together.",
+    adventure: "An exciting and unusual experience.",
+    agreement: "A shared understanding or decision.",
+    amazing: "Very surprising or impressive.",
+    analysis: "Careful study of something to understand it better.",
+    ancient: "Very old; from long ago.",
+    
+    announce: "To tell people something officially.",
+    apparent: "Easy to see or understand.",
+    approach: "To move closer to something.",
+    argument: "A disagreement or debate.",
+    arrange: "To organize or put things in order.",
+    arrived: "Came to a place.",
+    audience: "People watching or listening to something.",
+    average: "A number representing the middle or typical amount.",
+    balance: "The state of staying steady and not falling.",
+    believe: "To accept something as true.",
+    
+    biology: "The study of living things.",
+    capital: "A city where a country's government is located.",
+    careful: "Using attention to avoid mistakes.",
+    central: "In the middle or main part of something.",
+    certain: "Sure; having no doubt.",
+    challenge: "A task that is difficult and requires effort.",
+    character: "The qualities that make a person who they are.",
+    chemical: "A substance used in or produced by reactions.",
+    citizen: "A person legally belonging to a country.",
+    classroom: "A room where students learn.",
+    
+    clearly: "In an easy-to-understand way.",
+    collect: "To gather things together.",
+    combine: "To join or mix things together.",
+    compare: "To look at things to see how they are similar or different.",
+    complete: "To finish something.",
+    complex: "Not simple; made of many parts.",
+    conclude: "To reach a decision after thinking.",
+    confident: "Feeling sure of yourself.",
+    conflict: "A disagreement or fight.",
+    control: "To direct or manage something.",
+    
+    creative: "Able to make or think of new things.",
+    culture: "The customs, ideas, and traditions of a group.",
+    current: "Happening now.",
+    daughter: "A person's female child.",
+    definite: "Clearly known or decided.",
+    describe: "To explain what something is like.",
+    develop: "To grow or improve over time.",
+    difference: "The way in which things are not the same.",
+    direction: "The way something moves or points.",
+    discover: "To find something for the first time.",
+    
+    distance: "The amount of space between things.",
+    education: "Learning and teaching.",
+    effect: "The result of something happening.",
+    effort: "Physical or mental work done to achieve something.",
+    emotion: "A strong feeling such as joy or anger.",
+    encourage: "To give support or confidence.",
+    engineer: "Someone who designs or builds machines or structures.",
+    enormous: "Very large.",
+    evidence: "Information that shows something is true.",
+    exercise_def: "Physical activity that improves fitness.",
+
+    experience: "Knowledge gained through doing things.",
+    experiment: "A scientific test to discover something.",
+    favorite_def: "Most liked or preferred.",
+    finally: "After a long time or delay.",
+    freedom: "The ability to act or speak without restriction.",
+    frequent: "Happening often.",
+    general: "Common or widespread.",
+    generous: "Willing to give or share more than expected.",
+    government: "The group of people who lead a country.",
+    healthy: "In good physical condition.",
+    
+    helpful: "Willing to help others.",
+    imagine: "To form a picture in your mind.",
+    improve: "To make something better.",
+    include: "To have something as part of a whole.",
+    increase: "To make something larger in amount.",
+    indicate: "To show or point out.",
+    influence: "The power to affect how someone thinks or acts.",
+    information: "Facts or knowledge given about something.",
+    important: "Having great meaning or value.",
+    interest: "Wanting to know or learn more.",
+    
+    international: "Involving more than one country.",
+    justice: "Fair treatment under the law.",
+    knowledge: "Information, skills, or understanding gained through learning.",
+    laughter: "The act or sound of laughing.",
+    location: "A place where something is found.",
+    machine_def: "A device that uses power to do work.",
+    material: "A substance used to make things.",
+    measure: "To find the size, amount, or degree of something.",
+    memory: "The ability to remember things.",
+    mention: "To speak about something briefly.",
+    
+    method: "A way of doing something.",
+    moment: "A very short amount of time.",
+    mountain: "A high area of land rising steeply.",
+    movement: "The act of changing position or place.",
+    musical: "Related to music.",
+    natural: "Found in nature and not made by people.",
+    necessary: "Needed or required.",
+    nervous: "Worried or slightly afraid.",
+    nothing: "No thing; not anything.",
+    notice: "To become aware of something.",
+    
+    nutrition: "The process of getting the food the body needs.",
+    opinion: "What someone thinks or believes.",
+    ordinary: "Normal or not special.",
+    original: "Created first or new.",
+    package: "A wrapped object or container.",
+    patient: "Able to wait calmly.",
+    pattern: "A repeated design or arrangement.",
+    peaceful: "Calm and quiet.",
+    percent: "A number out of one hundred.",
+    personal_def: "Related to one person.",
+    
+    picture_def: "An image or drawing of something.",
+    planet: "A large object that orbits a star.",
+    plastic: "A man-made material used in many products.",
+    popular: "Liked by many people.",
+    possible: "Able to be done.",
+    powerful: "Having great strength or ability.",
+    prepare: "To get something ready.",
+    presence: "The state of being in a place.",
+    pressure: "Force applied to something.",
+    primary: "Most important; first in order.",
+    
+    principal: "The leader of a school.",
+    process: "A series of steps to achieve something.",
+    produce: "To make or create something.",
+    product: "Something that is made or sold.",
+    progress: "Movement toward improvement.",
+    project: "A planned task or assignment.",
+    promise_def: "A statement agreeing to do something.",
+    protect: "To keep something safe from harm.",
+    purpose: "The reason something is done.",
+    quality: "How good or bad something is.",
+    
+    question: "Something asked to get information.",
+    quiet: "Making little or no noise.",
+    reaction: "A response to something that happens.",
+    reality: "The actual state of things.",
+    receive: "To get something that is given.",
+    recent: "Happening not long ago.",
+    recognize: "To know someone or something from experience.",
+    relationship: "A connection between people or things.",
+    religion: "Beliefs about the meaning of life and worship of a higher power.",
+    remove: "To take something away.",
+    
+    replace: "To put something new in the place of something old.",
+    report: "A written or spoken account of something.",
+    require: "To need something.",
+    respect: "A feeling of admiration for someone.",
+    respond: "To reply or answer.",
+    restaurant: "A place where people buy and eat food.",
+    science: "The study of the natural world.",
+    suddenly: "Quickly and without warning.",
+    suggest: "To offer an idea or proposal.",
+    support: "To help or encourage.",
+    
+    suppose: "To think something is true without proof.",
+    surprise: "Something unexpected.",
+    surround: "To be all around something.",
+    symbol: "A sign that represents something else.",
+    system: "A group of connected parts working together.",
+    teacher: "A person who helps others learn.",
+    telephone: "A device used to talk to someone far away.",
+    temperature: "How hot or cold something is.",
+    terrible: "Very bad.",
+    theater: "A place where plays and films are shown.",
+    
+    thought: "An idea in the mind.",
+    thunder: "The loud sound after lightning.",
+    traffic: "Vehicles moving along a road.",
+    triangle_def: "A shape with three sides.",
+    trouble_def: "Difficulty or problems.",
+    united: "Joined or brought together.",
+    universe: "All space, matter, and energy.",
+    usually: "In most cases.",
+    victory: "A win or success.",
+    village: "A small group of homes and buildings.",
+    
+    visible: "Able to be seen.",
+    weather: "The condition of the air outdoors.",
+    weight: "How heavy something is.",
+    whisper_def: "To speak very quietly.",
+    wonderful: "Very good or pleasing.",
+    wooden: "Made of wood.",
+    worried: "Feeling anxious or concerned.",
+    writing: "Forming words on a surface.",
+    yesterday: "The day before today.",
+    yourself: "You personally; your own self.",
+    
+    zero: "The number 0.",
+    affection: "A gentle feeling of liking someone.",
+    argument: "A disagreement or exchange of different opinions.",
+    attention: "Careful thinking or listening.",
+    audience_def: "People who watch or listen to a performance.",
+    behavior: "The way a person acts.",
+    boundary: "A dividing line or limit.",
+    careless: "Not paying enough attention.",
+    chemical_def: "A substance used in or produced by reactions.",
+    comfortable: "Providing physical ease or relaxation.",
+    
+    committee: "A group of people chosen to make decisions.",
+    community: "A group of people living in the same place.",
+    complaint: "A statement of dissatisfaction.",
+    confusion: "A lack of understanding.",
+    consequence: "A result of an action.",
+    container: "Something used to hold items.",
+    creative_def: "Having imagination and original ideas.",
+    criminal: "Someone who breaks the law.",
+    critical: "Very important or requiring careful thought.",
+    cultural: "Related to the beliefs or customs of a group.",
+    
+    delicate: "Easily broken or damaged.",
+    democracy: "A system of government where people vote.",
+    delivery: "The act of bringing goods to someone.",
+    dependent: "Needing help or support from others.",
+    describe_def: "To explain what something is like.",
+    direction_def: "The way something moves or points.",
+    discovery: "Finding something for the first time.",
+    economic: "Related to money or resources.",
+    electric: "Powered by electricity.",
+    emotional: "Related to strong feelings.",
+    
+    encounter: "To unexpectedly meet someone or something.",
+    environment: "The surroundings or conditions where someone lives.",
+    equipment: "Tools or objects needed for a task.",
+    essential: "Absolutely necessary.",
+    estimate: "To make a rough guess about something.",
+    excellent: "Very good.",
+    exchange: "To give something and receive something in return.",
+    expensive: "Costing a lot of money.",
+    facility: "A building or space for a specific purpose.",
+    failure: "The state of not succeeding.",
+
+    familiar: "Well-known from experience.",
+    festival: "A celebration or series of events.",
+    finance: "Management of money.",
+    foreign: "From another country.",
+    frequent_def: "Happening often.",
+    furniture: "Large objects used in a home or office.",
+    generation: "All people born around the same time.",
+    generous_def: "Willing to give or share.",
+    global: "Relating to the whole world.",
+    gradual: "Happening slowly over time.",
+    
+    illegal: "Against the law.",
+    immediate: "Happening right away.",
+    industry: "Businesses that produce goods.",
+    informal: "Casual; not official.",
+    injury: "Damage to a person's body.",
+    insect: "A small creature with six legs and three body parts.",
+    instance: "An example of something.",
+    inspector: "A person who checks that things are correct.",
+    insurance: "A system for protecting against financial loss.",
+    intelligent: "Smart and able to learn quickly.",
+    
+    journal: "A book for writing thoughts or events.",
+    justice_def: "Fair treatment and respect under the law.",
+    laboratory: "A place for scientific experiments.",
+    landscape: "The appearance of natural land.",
+    lecture: "A talk given to teach something.",
+    legal: "Allowed by law.",
+    liquid: "A substance that flows and is not solid.",
+    literature: "Written works such as novels and poems.",
+    manager: "A person who leads or supervises others.",
+    marriage: "The legal union of two people.",
+    
+    material_def: "A substance used to make something.",
+    medicine: "A drug or treatment used to heal illness.",
+    military: "Relating to soldiers or armed forces.",
+    minimum: "The smallest amount possible.",
+    // Level 4
+    exercise: "Physical activity done to improve strength or health.",
+    rhythm: "A repeated pattern of sound or movement.",
+    chocolate: "A sweet food made from cocoa beans.",
+    business: "Work or trade done to earn money.",
+    restaurant: "A place where people buy and eat meals.",
+    grammar: "Rules for how words are used in a language.",
+    temperature: "How hot or cold something is.",
+    necessary: "Required or needed.",
+    separate: "To divide something into parts.",
+    license: "An official document giving permission to do something.",
+
+    conscience: "A person's sense of right and wrong.",
+    privilege: "A special right or advantage that others may not have.",
+    recommend: "To suggest something as a good choice.",
+    environment: "The surroundings, including nature and living things.",
+    government: "The group of people who control and guide a country.",
+    immediately: "Right away; without waiting.",
+    knowledge: "Information, understanding, or skills gained through learning.",
+    language: "A system of words used for communication.",
+    marriage: "A formal relationship between two people united as partners.",
+    neighbor: "A person who lives close to another.",
+
+    calendar: "A chart showing days, weeks, and months.",
+    category: "A group of things that share the same type.",
+    definitely: "Without a doubt.",
+    embarrass: "To make someone feel shy or ashamed.",
+    experiment: "A test done to learn or prove something.",
+    familiar: "Well-known from experience.",
+    ignorance: "Lack of knowledge or information.",
+    interrupt: "To stop someone from speaking or acting.",
+    jewelry: "Decorative items worn on the body.",
+    colonel: "A high-ranking military officer.",
+
+    vehicle: "Something used for transporting people or goods.",
+    volunteer: "A person who offers to help without being paid.",
+    yacht: "A large, often luxurious boat.",
+    anxious: "Feeling worried or nervous.",
+    campaign: "Actions planned to reach a goal, often political.",
+    champagne: "A sparkling wine from the Champagne region of France.",
+    committee: "A group of people chosen to make decisions.",
+    convenient: "Easy to use or fitting one's needs.",
+    courageous: "Showing bravery.",
+    disappear: "To go out of sight.",
+
+    disappoint: "To let someone down.",
+    hierarchy: "A system where people or things are ranked.",
+    maintenance: "Work done to keep something in good condition.",
+    nuisance: "Something annoying or bothersome.",
+    psychology: "The study of the mind and behavior.",
+    schedule: "A plan showing times for events.",
+    technique: "A special or skillful way of doing something.",
+    vacuum: "A space with no air; also a cleaning device.",
+    weird: "Very strange or unusual.",
+    xylophone: "A musical instrument with wooden bars.",
+
+    accommodate: "To provide space or help for someone.",
+    acknowledge: "To accept or admit something is true.",
+    aggressive: "Ready to attack or confront; forceful.",
+    amateur: "Someone who does something for pleasure, not pay.",
+    apparent: "Easy to see or understand.",
+    argument: "A disagreement or debate.",
+    assassination: "The killing of an important person for political reasons.",
+    attendance: "Being present at a place or event.",
+    balloon: "A rubber bag filled with air or gas.",
+    beginning: "The start of something.",
+
+    beneficial: "Helpful or good for something.",
+    brilliant: "Extremely bright, smart, or impressive.",
+    broccoli: "A green vegetable with a tree-like shape.",
+    bureau: "An office or a chest of drawers.",
+    cappuccino: "A coffee drink made with milk foam.",
+    cemetery: "A place where people are buried.",
+    chauffeur: "A person hired to drive someone’s car.",
+    colleague: "A person you work with.",
+    collision: "A crash between two or more things.",
+    commission: "A group given authority to do a task.",
+
+    competent: "Able to do something well.",
+    compliment: "A kind or praising remark.",
+    comprehension: "Understanding what something means.",
+    congratulate: "To praise someone for an achievement.",
+    connoisseur: "A person with expert taste or knowledge.",
+    consensus: "A general agreement.",
+    controversy: "Public disagreement about something.",
+    convenience: "Something that makes tasks easier.",
+    correspondence: "Written communication, usually letters or emails.",
+    courageous_def: "Showing bravery; having courage.",
+
+    criticism: "Negative comments about someone's work or actions.",
+    curriculum: "The courses taught in a school.",
+    decipher: "To figure out the meaning of something unclear.",
+    dedicate: "To give time or effort to a purpose.",
+    defendant: "A person accused in a court case.",
+    delicious: "Tasting very good.",
+    dependence: "Needing someone or something for support.",
+    desperate: "Feeling or showing great need or urgency.",
+    dilemma: "A situation requiring a difficult choice.",
+    disastrous: "Extremely bad or harmful.",
+
+    discipline: "Training that teaches self-control or rules.",
+    discrepancy: "A difference between two things that should match.",
+    dissuade: "To convince someone not to do something.",
+    drunkenness: "The state of being drunk.",
+    ecosystem: "A community of living things in an environment.",
+    efficiency: "Doing something well without wasting effort.",
+    emigrant: "A person who leaves their country to live elsewhere.",
+    emphasize: "To stress or highlight something.",
+    encyclopedia: "A book or set of books with information on many topics.",
+    enthusiastic: "Showing strong excitement or interest.",
+
+    entrepreneur: "A person who starts and runs a business.",
+    exaggerate: "To make something seem larger or more important than it is.",
+    exhaustion: "Extreme tiredness.",
+    existence: "The state of being alive or present.",
+    expertise: "Special skill or knowledge.",
+    fascinate: "To strongly attract or interest someone.",
+    fluorescent: "Glowing brightly under certain light.",
+    forfeit: "To lose something because of a rule or mistake.",
+    forty: "The number 40.",
+    frequently: "Happening often.",
+
+    fulfill: "To complete or satisfy something.",
+    gauge: "To measure or judge something.",
+    glamorous: "Attractive in an exciting way.",
+    governmental: "Related to the government.",
+    guarantee: "A promise that something will happen or be fixed.",
+    harassment: "Repeated and unwanted behavior that bothers someone.",
+    hindrance: "Something that delays or stops progress.",
+    hypothesis: "A possible explanation that can be tested.",
+    illegible: "Too messy or faint to read.",
+    illicit: "Not allowed by law.",
+
+    imagination: "The ability to form ideas or pictures in your mind.",
+    independent: "Not needing help from others.",
+    indispensable: "Absolutely necessary.",
+    indictment: "A formal accusation of a crime.",
+    inevitable: "Certain to happen.",
+    inoculate: "To give a vaccine for protection.",
+    interrupt_def: "To stop someone or something briefly.",
+    irresistible: "Too attractive or strong to refuse.",
+    jealousy: "A feeling of wanting what someone else has.",
+    legitimate: "Allowed or reasonable by law or standards.",
+
+    leisure: "Free time for relaxation.",
+    liaison: "A person who links groups or people.",
+    knowledgeable: "Having a lot of knowledge.",
+    millennium: "A period of 1,000 years.",
+    miniature: "A very small version of something.",
+    mischievous: "Playful in a way that may cause trouble.",
+    nevertheless: "In spite of that; however.",
+    noticeable: "Easy to see or observe.",
+    occasionally: "Happening from time to time.",
+    occurrence: "Something that happens.",
+
+    omission: "Something left out or not included.",
+    opportunity: "A chance to do something.",
+    parallel: "Lines or paths that never meet.",
+    parliament: "A group of elected lawmakers.",
+    perceive: "To notice or understand something.",
+    permanent: "Lasting forever or long-term.",
+    perseverance: "Continuing to try despite difficulty.",
+    personnel: "People employed in an organization.",
+    pharaoh: "An ancient Egyptian ruler.",
+    playwright: "A person who writes plays.",
+
+    possession: "Something someone owns.",
+    precede: "To come before something.",
+    prejudice: "Unfair negative opinion about someone.",
+    privilege_def: "A special benefit or right.",
+    pronunciation: "The way a word is spoken.",
+    propaganda: "Information used to influence opinions.",
+    prosperous: "Financially successful.",
+    publicly: "In a way that is open or visible to others.",
+    questionnaire: "A written list of questions for information.",
+    quarantine: "To keep someone apart to prevent disease spread.",
+
+    raspberry: "A small red berry.",
+    receipt: "A paper showing what was bought.",
+    recommendation: "A suggestion that something is good.",
+    relevant: "Connected to the topic.",
+    reluctant: "Not wanting to do something.",
+    remembrance: "The act of remembering.",
+    reminiscent: "Making you think of something else.",
+    repetition: "The act of doing or saying something again.",
+    republic: "A type of government with elected leaders.",
+    resistance: "The act of fighting against something.",
+    
+    rhythmical: "Having a regular beat.",
+    sacrifice: "Giving up something for a greater good.",
+    satisfactory: "Good enough; acceptable.",
+    scarce: "Hard to find; not much available.",
+    scissors: "A tool with two blades used for cutting.",
+    sergeant: "A mid-level rank in the military or police.",
+    sincerely: "In a genuine and honest way.",
+    souvenir: "An item kept as a reminder of a place or event.",
+    specialty: "A particular skill or type of product.",
+    strengthen: "To make something stronger.",
+
+    subsistence: "The minimum needed to stay alive.",
+    subtle: "Small or difficult to notice.",
+    successful: "Having achieved a goal.",
+    succession: "A series of people or things following each other.",
+    sufficient: "Enough for a purpose.",
+    superintendent: "A person who manages or oversees something.",
+    supersede: "To replace something older or less effective.",
+    surprise_def: "Something unexpected.",
+    surveillance: "Close observation, often by authorities.",
+    suspicious: "Feeling that something is wrong or someone is untrustworthy.",
+    
+    tangible: "Able to be touched or physically felt.",
+    tendency: "A likelihood to behave in a certain way.",
+    tournament: "A competition with many players or teams.",
+    transition: "A change from one state to another.",
+    treacherous: "Dangerous or not trustworthy.",
+    truly: "Honestly; really.",
+    twelfth: "The ordinal number 12th.",
+    tyranny: "Cruel or unfair rule.",
+    unanimous: "All in agreement.",
+    unnecessary: "Not needed.",
+
+    vacuum_def: "A space without air.",
+    vegetable: "A plant used as food.",
+    vicious: "Very violent or cruel.",
+    vocabulary: "All the words a person knows.",
+    voluntary: "Done by choice; not forced.",
+    warrant: "An official document giving permission.",
+    weaponry: "Weapons or tools used in fighting.",
+    wholly: "Completely or entirely.",
+    wield: "To handle and use a tool or weapon.",
+    withhold: "To refuse to give something.",
+    
+    yield: "To produce or give something.",
+    youthful: "Having qualities of young people.",
+    zealous: "Showing strong enthusiasm or passion.",
+    zoology: "The scientific study of animals.",
+    accessible: "Easy to reach or use.",
+    adolescence: "The stage between childhood and adulthood.",
+    aerodynamic: "Shaped to reduce wind resistance.",
+    aesthetic: "Related to beauty or artistic taste.",
+    allegiance: "Loyalty or commitment.",
+    aluminum: "A lightweight silver-colored metal.",
+    
+    annihilate: "To destroy completely.",
+    anonymous: "Not identified by name.",
+    applicable: "Relevant or able to be used.",
+    approximate: "Close to the actual amount.",
+    articulate: "Able to express ideas clearly.",
+    assignment: "A task or project to complete.",
+    assistance: "Help given to someone.",
+    auxiliary: "Providing additional help or support.",
+    belligerent: "Aggressive or eager to fight.",
+    benevolent: "Kind and wanting to help.",
+
+    buoyancy: "The ability to float.",
+    camouflage: "A way of hiding by blending in.",
+    caterpillar: "A worm-like insect that becomes a butterfly.",
+    cautious: "Careful to avoid danger.",
+    cerebral: "Related to the brain.",
+    circulation: "Movement through a system, like blood in the body.",
+    coincidence: "Events happening by chance.",
+    collaborate: "To work together with others.",
+    colonial: "Related to colonies or settlement.",
+    conductor: "A person who leads an orchestra or collects fares.",
+
+    confidential: "Meant to be kept secret.",
+    conjunction: "A word that connects parts of a sentence.",
+    constituent: "A person represented by an elected official.",
+    contagious: "Able to spread from person to person.",
+    contaminant: "Something that makes another substance unclean.",
+    continuous: "Without stopping.",
+    corpse: "A dead body.",
+    cortical: "Related to the outer layer of an organ, like the brain.",
+    credential: "A qualification or proof of ability.",
+    criterion: "A standard used for judging something.",
+
+    deficiency: "A lack of something needed.",
+    delirious: "In a confused or excited state.",
+    denominator: "The bottom number in a fraction.",
+    development: "Growth or progress.",
+    diagnosis: "Identification of a problem or illness.",
+    dignitary: "An important or honored person.",
+    diplomacy: "Managing relationships between countries.",
+    disastrous_def: "Causing great harm or damage.",
+    discipline_def: "Training that teaches rules or self-control.",
+    dignified: "Showing respect or seriousness.",
+    // Level 5
+    acquiesce: "To agree or accept something without protest.",
+    idiosyncrasy: "A unique or unusual habit or behavior of a person.",
+    juxtaposition: "Placing things side by side to show contrast.",
+    quintessential: "Representing the pure or perfect example of something.",
+    sesquipedalian: "Using long words or characterized by long words.",
+    onomatopoeia: "A word that sounds like what it describes, such as buzz.",
+    mnemonic: "A memory trick used to help remember information.",
+    hyperbole: "An exaggerated statement not meant to be taken literally.",
+    anachronistic: "Belonging to a different time period; out of date.",
+    conscientious: "Careful, responsible, and guided by strong morals.",
+
+    indistinguishable: "Impossible to tell apart because things are so similar.",
+    paraphernalia: "Equipment or items used for a particular activity.",
+    mischievous: "Playfully causing trouble or being slightly naughty.",
+    reconnaissance: "Exploring an area to gather information, usually military.",
+    bureaucracy: "A system of government with many rules and departments.",
+    pharaoh: "A king or ruler of ancient Egypt.",
+    hemorrhage: "Severe, uncontrolled bleeding.",
+    occurrence: "An event or something that happens.",
+    supersede: "To replace something older or less effective.",
+    inconsequential: "Not important; too small to matter.",
+
+    magnanimous: "Very generous or forgiving, especially toward a rival.",
+    metamorphosis: "A major change in form or structure.",
+    opalescent: "Showing many colors like an opal.",
+    pulchritude: "Great physical beauty.",
+    quizzical: "Showing mild confusion or curiosity.",
+    renegotiate: "To discuss terms again to change an agreement.",
+    surreptitious: "Done secretly to avoid being noticed.",
+    temerarious: "Extremely bold or reckless.",
+    ubiquitous: "Present or found everywhere.",
+    vicissitude: "A sudden or unexpected change, often unpleasant.",
+
+    whimsical: "Playfully unusual or imaginative.",
+    xenophobia: "Fear or dislike of people from other countries.",
+    yesteryear: "A time in the past remembered fondly.",
+    zealous: "Filled with strong enthusiasm or passion.",
+    circumlocution: "Using more words than necessary, sometimes to avoid the point.",
+    disenfranchisement: "Taking away someone's right to vote or participate.",
+    enthusiastic: "Showing great excitement or interest.",
+    fortuitous: "Happening by chance, often in a lucky way.",
+    gregarious: "Sociable; enjoying the company of others.",
+    hypothesis: "A testable idea or explanation.",
+    
+    indispensable: "Absolutely necessary; cannot be replaced.",
+    lieutenant: "A rank in the military or police under a captain.",
+    millennium: "A period of one thousand years.",
+    parliament: "A group of elected lawmakers in some countries.",
+    questionnaire: "A written set of questions for gathering information.",
+    rendezvous: "A meeting arranged at a set time and place.",
+    silhouette: "A dark shape outlined against a lighter background.",
+    troublesome: "Causing difficulty or annoyance.",
+    unanimous: "Everyone agreeing; no disagreement.",
+    vocabulary: "All the words someone knows or uses.",
+
+    acquittal: "A legal judgment that someone is not guilty.",
+    adjudicate: "To judge or make a decision about a problem.",
+    aegis: "Protection or support from someone powerful.",
+    aestheticism: "A belief that art is valuable for its beauty alone.",
+    afficionado: "A person who is very knowledgeable and passionate about something.",
+    aggrandizement: "Increasing power, status, or wealth.",
+    allegorical: "Containing a hidden moral or symbolic meaning.",
+    amanuensis: "Someone who writes or types what another person dictates.",
+    anemone: "A brightly colored sea creature or flowering plant.",
+    antidisestablishmentarianism: "Opposition to removing a state church's official status.",
+
+    apocryphal: "Widely believed but likely not true.",
+    approbation: "Approval or praise.",
+    archetypal: "Representing a perfect example of something.",
+    "argy-bargy": "A noisy argument or dispute.",
+    asseveration: "A firm or serious statement.",
+    astigmatism: "An eye condition causing blurry vision.",
+    ataraxia: "A state of calmness and freedom from worry.",
+    aureole: "A bright circle or halo around something.",
+    autochthonous: "Native or originating where it is found.",
+    baccalaureate: "A degree awarded after completing secondary or college studies.",
+
+    bellwether: "Something that shows future trends.",
+    bourgeoisie: "The middle class, especially relating to wealth and values.",
+    boustrophedon: "Writing that alternates direction each line.",
+    braggadocio: "Boastful or bragging behavior.",
+    cacophony: "A harsh, unpleasant mixture of sounds.",
+    callipygian: "Having well-shaped or attractive buttocks.",
+    candelabrum: "A candle holder with multiple branches.",
+    capricious: "Changing mood or behavior suddenly and unpredictably.",
+    catachresis: "Misuse of a word or phrase.",
+    catastrophe: "A sudden disaster or great failure.",
+
+    caterwaul: "To make a loud, wailing noise.",
+    chiaroscuro: "A contrast between light and dark in art.",
+    circumambient: "Surrounding or encircling something.",
+    claustrophobia: "Fear of being in closed or tight spaces.",
+    cognizant: "Aware or conscious of something.",
+    commensurate: "Equal in size, amount, or degree.",
+    compunction: "A feeling of guilt or regret.",
+    concatenation: "A series of interconnected events or things.",
+    concupiscence: "Strong sexual desire.",
+    contumacious: "Stubbornly disobedient.",
+
+    contrapositive: "A logical statement formed by reversing and negating another.",
+    corporeal: "Relating to the physical body.",
+    corroborate: "To confirm or support a statement.",
+    crepuscular: "Related to twilight; active at dawn or dusk.",
+    cryptography: "The study of writing or solving codes.",
+    cynosure: "Something that attracts attention or admiration.",
+    defenestration: "The act of throwing someone or something out a window.",
+    deleterious: "Harmful or damaging.",
+    demagogue: "A leader who gains support using emotion, not reason.",
+    denouement: "The final resolution of a story or event.",
+
+    depredation: "The act of attacking or plundering.",
+    desideratum: "Something that is needed or desired.",
+    desuetude: "A state of being unused or out of practice.",
+    diaphanous: "Light, delicate, and see-through.",
+    dichotomy: "A division into two opposite parts.",
+    didactic: "Intended to teach or instruct.",
+    discombobulate: "To confuse or upset someone.",
+    disquisition: "A detailed essay or discussion.",
+    dodecahedron: "A 12-sided geometric shape.",
+    ebullient: "Full of energy and enthusiasm.",
+
+    eclectic: "Choosing ideas or styles from various sources.",
+    effervescence: "Bubbly excitement or fizzing.",
+    egregious: "Extremely bad or shocking.",
+    eleemosynary: "Related to charity or giving.",
+    elidescent: "Fading or disappearing gradually.",
+    ellipse: "An oval shape.",
+    embouchure: "The way a musician shapes their mouth to play a wind instrument.",
+    encomium: "High praise, especially in writing.",
+    enervate: "To weaken or drain energy.",
+    ensconce: "To settle comfortably in a safe place.",
+
+    entomology: "The scientific study of insects.",
+    ephemeral: "Lasting a short time.",
+    epistemology: "The study of knowledge and belief.",
+    equanimity: "Calmness and composure under stress.",
+    equivocate: "To speak unclearly to avoid the truth.",
+    erstwhile: "Former; in the past.",
+    esoteric: "Understood by only a small, specialized group.",
+    euphemism: "A polite or mild phrase replacing something harsh.",
+    euphonious: "Pleasant-sounding.",
+    exacerbate: "To make a problem or situation worse.",
+
+    excoriate: "To criticize harshly.",
+    execrable: "Extremely bad or unpleasant.",
+    existential: "Related to human existence or purpose.",
+    expeditious: "Done quickly and efficiently.",
+    extemporaneous: "Spoken or done without preparation.",
+    facetious: "Joking in a way that is not appropriate.",
+    fallacious: "Based on false reasoning.",
+    farrago: "A confused mixture of things.",
+    fastidious: "Very careful and hard to please.",
+    felicitous: "Well-chosen or fitting for the situation.",
+
+    floccinaucinihilipilification: "The act of considering something worthless.",
+    grandiloquent: "Using fancy language to impress others.",
+    harangue: "A long, aggressive speech.",
+    hederaceous: "Related to ivy plants.",
+    hemidemisemiquaver: "A very short musical note, 1/64 of a whole note.",
+    heterogeneous: "Made up of different kinds.",
+    heuristic: "A rule-of-thumb method for problem solving.",
+    histrionic: "Overly dramatic or theatrical.",
+    homogeneous: "Made up of similar or identical parts.",
+    iconoclast: "Someone who challenges traditional beliefs or institutions.",
+
+    idempotent: "Unchanged when applied multiple times.",
+    ignominious: "Shameful or deserving disgrace.",
+    illimitable: "Without limits.",
+    immiscible: "Not able to mix with another substance.",
+    immutable: "Unable to change.",
+    impecunious: "Having very little money.",
+    impervious: "Not affected by something.",
+    imperturbable: "Calm and difficult to upset.",
+    improvident: "Not preparing for the future.",
+    incommunicado: "Unable or not allowed to communicate with others.",
+
+    incontrovertible: "Impossible to deny or dispute.",
+    indefatigable: "Unable to be tired out.",
+    indomitable: "Impossible to defeat.",
+    ineluctable: "Impossible to avoid.",
+    ineffable: "Too great to be expressed in words.",
+    inexplicable: "Not able to be explained.",
+    inimitable: "Too unique to be copied.",
+    inscrutable: "Difficult to understand.",
+    insouciant: "Calm and carefree.",
+    interlocutor: "A person taking part in a conversation.",
+
+    intrepid: "Very brave and fearless.",
+    inure: "To become used to something unpleasant.",
+    inveterate: "Having a long-established habit.",
+    iridescent: "Showing rainbow-like colors that change when seen from different angles.",
+    irrevocable: "Impossible to undo or change.",
+    labyrinthine: "Very complicated or twisting like a maze.",
+    lackadaisical: "Showing little enthusiasm or effort.",
+    lagniappe: "A small gift or bonus given to a customer.",
+    lachrymose: "Tearful or likely to cry.",
+    legerdemain: "Skillful trickery or sleight of hand.",
+
+    loquacious: "Very talkative.",
+    lugubrious: "Sad and gloomy.",
+    machiavellian: "Cunning and using deceit to achieve goals.",
+    malfeasance: "Wrongdoing, especially by a public official.",
+    mellifluous: "Smooth and pleasant to hear.",
+    meretricious: "Attractive but lacking real value.",
+    metallurgy: "The science of metals and their uses.",
+    metempsychosis: "The belief that souls pass into new bodies after death.",
+    metonymy: "A figure of speech in which one word stands for something related.",
+    microcosm: "A small representation of something larger.",
+
+    monolithic: "Large, powerful, and difficult to change.",
+    moribund: "Close to death or no longer active.",
+    myrmidon: "A loyal follower who obeys orders without question.",
+    mythopoeic: "Creating or suggesting myths.",
+    nebulous: "Unclear, vague, or cloud-like.",
+    nefarious: "Extremely evil or wicked.",
+    neolithic: "Related to the later Stone Age.",
+    neologism: "A newly created word or expression.",
+    nonchalant: "Calm, relaxed, and unconcerned.",
+    obfuscate: "To make something unclear or confusing.",
+
+    obstreperous: "Noisy and difficult to control.",
+    obsequious: "Overly eager to please or obey.",
+    obstreperousness: "The quality of being noisy and difficult to control.",
+    odiferous: "Having a strong smell.",
+    officious: "Offering unwanted help in an annoying way.",
+    omniscient: "Knowing everything.",
+    onomastic: "Related to the study of names.",
+    ossification: "The process of becoming rigid or set in habits.",
+    ostensible: "Appearing to be true but possibly not.",
+    ostentatious: "Showy or intended to attract attention.",
+
+    oxymoronic: "Containing contradictory terms, like 'jumbo shrimp.'",
+    palimpsest: "A reused document with traces of earlier writing.",
+    panegyric: "A speech or text that praises someone highly.",
+    paradigmatic: "Serving as a model or example.",
+    parallax: "The apparent shift in position when viewed from different angles.",
+    paramountcy: "The state of being highest in authority.",
+    parapet: "A low protective wall.",
+    parsimony: "Extreme unwillingness to spend money; stinginess.",
+    pejorative: "A word expressing disapproval.",
+    penultimate: "Second to last.",
+
+    perfunctory: "Done without much care or effort.",
+    peripatetic: "Traveling from place to place.",
+    pernicious: "Very harmful or destructive.",
+    perturbation: "A disturbance or worry.",
+    philanthropic: "Wanting to help others through charity.",
+    philharmonic: "Related to an orchestra or musical group.",
+    phlegmatic: "Calm and not easily excited.",
+    phosphorescent: "Glowing without heat.",
+    photolithography: "A process used to transfer patterns onto surfaces.",
+    plaintiff: "A person who brings a case to court.",
+
+    plenipotentiary: "A person with full authority to act for a government.",
+    plethora: "A large or excessive amount.",
+    portmanteau: "A word made by combining two others, like 'brunch.'",
+    posthumous: "Happening after someone's death.",
+    prestidigitation: "Skillful magic tricks or hand movements.",
+    preternatural: "Beyond what is normal or natural.",
+    prognosticate: "To predict the future.",
+    prolegomenon: "An introduction to a book or discussion.",
+    propitiation: "An action done to gain favor or forgiveness.",
+    proselytize: "To try to convert someone to a belief or opinion.",
+
+    protean: "Able to change easily or frequently.",
+    pseudonymous: "Using a fake or assumed name.",
+    psephology: "The study of voting and elections.",
+    pugnacious: "Ready to fight or argue.",
+    pulverulent: "Covered with dust or fine powder.",
+    quattrocento: "The 1400s in Italian art history.",
+    quixotic: "Idealistic in a way that is unrealistic.",
+    recalcitrant: "Stubbornly refusing to obey.",
+    reconnoiter: "To survey or inspect an area, often for military purposes.",
+    redoubtable: "Fearsome or impressive.",
+
+    refulgent: "Shining brightly.",
+    relevant: "Connected to the topic.",
+    remonstrate: "To protest or argue strongly.",
+    requisition: "A formal request or demand for something.",
+    resplendent: "Bright and impressive in appearance.",
+    restitution: "Giving back something lost or stolen.",
+    reverberation: "A repeated echoing sound.",
+    rhapsodic: "Expressing great enthusiasm or delight.",
+    risorgimento: "The movement for Italian unification in the 1800s.",
+    salubrious: "Healthy or promoting well-being.",
+
+    sartorial: "Related to clothing or style.",
+    scintillate: "To sparkle or shine brightly.",
+    sclerotic: "Becoming rigid or unable to change.",
+    scrupulous: "Very careful and honest.",
+    serendipity: "Finding something good without looking for it.",
+    simulacrum: "An imitation or representation of something.",
+    solipsistic: "Believing only one's self is real.",
+    somnambulism: "Sleepwalking.",
+    soporific: "Causing sleep.",
+    subcutaneous: "Under the skin.",
+
+    subterranean: "Below the ground.",
+    supercilious: "Behaving as if you are better than others.",
+    supererogatory: "Beyond what is required.",
+    superfluous: "More than necessary; excessive.",
+    sycophant: "A person who flatters others for advantage.",
+    symbiosis: "A close relationship between two living things.",
+    syncretism: "Combining different beliefs or practices.",
+    syzygy: "A straight-line alignment of three celestial bodies.",
+    teleological: "Related to purpose or design in nature.",
+    temerity: "Boldness or confidence that seems foolish.",
+
+    terpsichorean: "Related to dance.",
+    thaumaturgy: "Miracle-working or magic.",
+    tintinnabulation: "A ringing or tinkling sound.",
+    torpid: "Sluggish or inactive.",
+    truculent: "Aggressively defiant or eager to fight.",
+    ubiquity: "The state of being everywhere.",
+    usufruct: "The right to use and benefit from someone else's property.",
+    uxorious: "Excessively devoted to one's wife.",
+    verisimilitude: "The appearance of being true or real.",
+    viceregal: "Acting as a ruler for a king or queen.",
+
+    vinculum: "A line used in math to group terms.",
+    vituperative: "Harsh and abusive in speech.",
+    zeitgeist: "The spirit or mood of a time period.",
+    zeugma: "A figure of speech where one word applies to two others.",
+    ziggurat: "A pyramid-like temple from ancient Mesopotamia.",
+    zygomorphic: "Symmetrical on only one plane, like some flowers.",
+    xenotransplantation: "Transplanting organs or tissues between species.",
+    xylotomous: "Able to cut or bore into wood.",
+    yesternight: "The night before today.",
+    yestermorn: "Yesterday morning."
+};
+
+  // ===============================
+  // STATE
+  // ===============================
+
+  let state = {
+    currentLevel: 1,
+    currentRoundWords: [],
+    currentIndex: 0,
+    currentWord: null,
+    roundSize: 30,
+    roundActive: false,
+    missedOnlyMode: false,
+    awaitingReentry: false
+  };
+
+  let stats = {
+    totalAttempted: 0,
+    correct: 0,
+    incorrect: 0,
+    currentStreak: 0,
+    bestStreak: 0,
+    perLevel: {
+      1: { attempted: 0, correct: 0 },
+      2: { attempted: 0, correct: 0 },
+      3: { attempted: 0, correct: 0 },
+      4: { attempted: 0, correct: 0 },
+      5: { attempted: 0, correct: 0 }
+    },
+    words: {}
+  };
+
+  // Voice handling
+  let allVoices = [];
+  let preferredVoice = null;
+
+  // ===============================
+  // DOM REFERENCES
+  // ===============================
+
+  const statAttemptedEl = document.getElementById("statAttempted");
+  const statCorrectEl = document.getElementById("statCorrect");
+  const statIncorrectEl = document.getElementById("statIncorrect");
+  const statAccuracyEl = document.getElementById("statAccuracy");
+  const statStreakEl = document.getElementById("statStreak");
+  const statBestStreakEl = document.getElementById("statBestStreak");
+
+  const difficultyNameEl = document.getElementById("difficultyName");
+  const difficultyLevelEl = document.getElementById("difficultyLevel");
+  const roundInfoEl = document.getElementById("roundInfo");
+  const systemMessageEl = document.getElementById("systemMessage");
+
+  const playWordBtn = document.getElementById("playWordBtn");
+  const defineBtn = document.getElementById("defineBtn");
+  const startRoundBtn = document.getElementById("startRoundBtn");
+  const difficultySelectEl = document.getElementById("difficultySelect");
+  const missedModeCheckbox = document.getElementById("missedModeCheckbox");
+  const speechWarningEl = document.getElementById("speechWarning");
+
+  const answerInput = document.getElementById("answerInput");
+  const checkBtn = document.getElementById("checkBtn");
+  const nextWordBtn = document.getElementById("nextWordBtn");
+  const feedbackEl = document.getElementById("feedback");
+  const wordInstructionEl = document.getElementById("wordInstruction");
+
+  const historyContentEl = document.getElementById("historyContent");
+  const resetStatsBtn = document.getElementById("resetStatsBtn");
+
+  // ===============================
+  // LOCAL STORAGE
+  // ===============================
+
+  function loadStats() {
+    try {
+      const raw = localStorage.getItem(STORAGE_KEY);
+      if (!raw) return;
+      const parsed = JSON.parse(raw);
+      if (parsed && typeof parsed === "object") {
+        stats = {
+          ...stats,
+          ...parsed,
+          perLevel: { ...stats.perLevel, ...(parsed.perLevel || {}) },
+          words: parsed.words || {}
+        };
+      }
+    } catch (e) {
+      console.warn("Failed to load stats:", e);
+    }
+  }
+
+  function saveStats() {
+    try {
+      localStorage.setItem(STORAGE_KEY, JSON.stringify(stats));
+    } catch (e) {
+      console.warn("Failed to save stats:", e);
+    }
+  }
+
+  function resetStats() {
+    if (!confirm("This will erase all progress and history. Continue?")) {
+      return;
+    }
+    stats = {
+      totalAttempted: 0,
+      correct: 0,
+      incorrect: 0,
+      currentStreak: 0,
+      bestStreak: 0,
+      perLevel: {
+        1: { attempted: 0, correct: 0 },
+        2: { attempted: 0, correct: 0 },
+        3: { attempted: 0, correct: 0 },
+        4: { attempted: 0, correct: 0 },
+        5: { attempted: 0, correct: 0 }
+      },
+      words: {}
+    };
+    saveStats();
+    updateStatsUI();
+    renderHistory();
+    systemMessageEl.textContent = "All stats reset. Tap Start to begin again.";
+  }
+
+  // ===============================
+  // SPEECH + VOICE SELECTION
+  // ===============================
+
+  function loadVoices() {
+    if (!("speechSynthesis" in window)) return;
+    allVoices = window.speechSynthesis.getVoices() || [];
+    preferredVoice = pickPreferredVoice(allVoices);
+  }
+
+  function pickPreferredVoice(voices) {
+    if (!voices || voices.length === 0) return null;
+
+    const byPriority = [
+      "Natural",
+      "Enhanced",
+      "Google US English",
+      "Samantha",
+      "Allison",
+      "Ava",
+      "America",
+      "English"
+    ];
+
+    for (const keyword of byPriority) {
+      const match = voices.find(v =>
+        (v.name && v.name.includes(keyword)) ||
+        (v.voiceURI && v.voiceURI.includes(keyword))
+      );
+      if (match) return match;
+    }
+    return voices[0] || null;
+  }
+
+  function speakText(text) {
+    if (!("speechSynthesis" in window)) {
+      return;
+    }
+    window.speechSynthesis.cancel();
+    const utter = new SpeechSynthesisUtterance(text);
+    utter.lang = "en-US";
+    utter.rate = 0.7; // slower, more natural
+    utter.pitch = 1.0;
+    if (preferredVoice) {
+      utter.voice = preferredVoice;
+    }
+    window.speechSynthesis.speak(utter);
+  }
+
+  function speakWord(word) {
+    speakText(word);
+  }
+
+  function speakDefinition(word) {
+    if (!word) return;
+    const key = word.toLowerCase();
+    const def = DEFINITIONS[key] || "No definition is stored for this word yet.";
+    speakText(def);
+  }
+
+  function checkSpeechSupport() {
+    if (!("speechSynthesis" in window)) {
+      speechWarningEl.textContent =
+        "Your browser may not support speech synthesis. The round will still run, but you might not hear the word or definition.";
+    } else {
+      speechWarningEl.textContent = "";
+    }
+  }
+
+  // ===============================
+  // UI HELPERS
+  // ===============================
+
+  function updateStatsUI() {
+    statAttemptedEl.textContent = stats.totalAttempted;
+    statCorrectEl.textContent = stats.correct;
+    statIncorrectEl.textContent = stats.incorrect;
+
+    let acc = 0;
+    if (stats.totalAttempted > 0) {
+      acc = (stats.correct / stats.totalAttempted) * 100;
+    }
+    statAccuracyEl.textContent = acc.toFixed(0) + "%";
+    statStreakEl.textContent = stats.currentStreak;
+    statBestStreakEl.textContent = stats.bestStreak;
+
+    difficultyNameEl.textContent = LEVEL_NAMES[state.currentLevel];
+    difficultyLevelEl.textContent = state.currentLevel;
+
+    if (difficultySelectEl) {
+      difficultySelectEl.value = String(state.currentLevel);
+    }
+  }
+
+  function updateRoundInfo() {
+    if (!state.roundActive) {
+      roundInfoEl.textContent = "Round not started";
+      return;
+    }
+    roundInfoEl.textContent = `Word ${state.currentIndex + 1} of ${state.roundSize}`;
+  }
+
+  function setInputEnabled(enabled) {
+    answerInput.disabled = !enabled;
+    checkBtn.disabled = !enabled;
+    if (enabled) {
+      answerInput.focus();
+      answerInput.select();
+    }
+  }
+
+  function setWordButtonsEnabled(enabled) {
+    playWordBtn.disabled = !enabled;
+    defineBtn.disabled = !enabled;
+  }
+
+  function showFeedback(message, type) {
+    feedbackEl.textContent = message || "";
+    feedbackEl.className = "feedback" + (type ? " " + type : "");
+  }
+
+  // ===============================
+  // WORD STATS
+  // ===============================
+
+  function ensureWordStats(word, level) {
+    if (!stats.words[word]) {
+      stats.words[word] = {
+        level: level || state.currentLevel,
+        timesSeen: 0,
+        timesCorrect: 0,
+        timesMissed: 0,
+        lastSeen: null
+      };
+    }
+    stats.words[word].level = level || state.currentLevel;
+    return stats.words[word];
+  }
+
+  function recordResult(word, level, correct) {
+    const wStats = ensureWordStats(word, level);
+    const now = new Date().toISOString();
+    wStats.timesSeen += 1;
+    wStats.lastSeen = now;
+
+    stats.totalAttempted += 1;
+    stats.perLevel[level].attempted += 1;
+
+    if (correct) {
+      wStats.timesCorrect += 1;
+      stats.correct += 1;
+      stats.currentStreak += 1;
+      if (stats.currentStreak > stats.bestStreak) {
+        stats.bestStreak = stats.currentStreak;
+      }
+    } else {
+      wStats.timesMissed += 1;
+      stats.incorrect += 1;
+      stats.currentStreak = 0;
+    }
+
+    saveStats();
+    updateStatsUI();
+  }
+
+  // ===============================
+  // DIFFICULTY PROGRESSION
+  // ===============================
+
+  function maybeAutoIncreaseDifficulty() {
+    const level = state.currentLevel;
+    if (level >= 5) return;
+
+    const lvlStats = stats.perLevel[level];
+    if (!lvlStats || lvlStats.attempted < 60) return;
+
+    const accuracy = lvlStats.correct / lvlStats.attempted;
+    if (accuracy >= 0.85) {
+      state.currentLevel = level + 1;
+      systemMessageEl.textContent =
+        `Great work! Your accuracy in Level ${level} is high. Moving up to Level ${state.currentLevel} (${LEVEL_NAMES[state.currentLevel]}).`;
+      updateStatsUI();
+    }
+  }
+
+  function setDifficultyFromSelect() {
+    const val = parseInt(difficultySelectEl.value, 10);
+    if (val >= 1 && val <= 5) {
+      state.currentLevel = val;
+      systemMessageEl.textContent =
+        `Difficulty set to Level ${state.currentLevel} (${LEVEL_NAMES[state.currentLevel]}).`;
+      updateStatsUI();
+    }
+  }
+
+  // ===============================
+  // ROUND / WORD SELECTION
+  // ===============================
+
+  function getMissedWordsForLevel(level) {
+    const list = [];
+    for (const [word, ws] of Object.entries(stats.words)) {
+      if (ws.timesMissed > 0) {
+        const levelDiff = Math.abs((ws.level || level) - level);
+        list.push({ word, ws, levelDiff });
+      }
+    }
+    list.sort((a, b) => {
+      if (a.levelDiff !== b.levelDiff) return a.levelDiff - b.levelDiff;
+      return (b.ws.timesMissed || 0) - (a.ws.timesMissed || 0);
+    });
+    return list;
+  }
+
+  function pickWordFromLevel(level, usedWords) {
+    const pool = WORDS[level];
+    if (!pool || pool.length === 0) return null;
+    let tries = 0;
+    while (tries < 50) {
+      const idx = Math.floor(Math.random() * pool.length);
+      const candidate = pool[idx];
+      if (!usedWords.has(candidate)) {
+        return candidate;
+      }
+      tries++;
+    }
+    return pool[Math.floor(Math.random() * pool.length)];
+  }
+
+  function buildRoundWords() {
+    const used = new Set();
+    const result = [];
+    const missedList = getMissedWordsForLevel(state.currentLevel);
+
+    for (let i = 0; i < state.roundSize; i++) {
+      let chosen = null;
+      const hasMissed = missedList.length > 0;
+      const missedBias = state.missedOnlyMode ? 0.8 : 0.5;
+      const useMissed = hasMissed && Math.random() < missedBias;
+
+      if (useMissed) {
+        for (let j = 0; j < missedList.length; j++) {
+          const candidate = missedList[j].word;
+          if (!used.has(candidate)) {
+            chosen = candidate;
+            break;
+          }
+        }
+      }
+
+      if (!chosen && !state.missedOnlyMode) {
+        chosen = pickWordFromLevel(state.currentLevel, used);
+      }
+
+      if (!chosen && state.missedOnlyMode && hasMissed) {
+        chosen = missedList[Math.floor(Math.random() * missedList.length)].word;
+      }
+
+      if (!chosen) {
+        chosen = pickWordFromLevel(state.currentLevel, used);
+      }
+
+      if (chosen) {
+        used.add(chosen);
+        result.push(chosen);
+      }
+    }
+
+    return result;
+  }
+
+  function startRound() {
+    if (!("speechSynthesis" in window)) {
+      speechWarningEl.textContent =
+        "Your browser may not support speech synthesis. The round will still run, but you might not hear the word or definition.";
+    } else {
+      speechWarningEl.textContent = "";
+    }
+
+    state.currentRoundWords = buildRoundWords();
+    state.currentIndex = 0;
+    state.roundActive = true;
+    state.currentWord = null;
+    state.awaitingReentry = false;
+
+    systemMessageEl.textContent =
+      "Round started. Listen to each word, then type the spelling.";
+    showFeedback("", "");
+    nextWordBtn.style.display = "none";
+    setWordButtonsEnabled(true);
+    setInputEnabled(true);
+    showNextWord();
+  }
+
+  function showNextWord() {
+    if (!state.roundActive) return;
+
+    if (state.currentIndex >= state.currentRoundWords.length) {
+      state.roundActive = false;
+      setInputEnabled(false);
+      setWordButtonsEnabled(false);
+      nextWordBtn.style.display = "none";
+      wordInstructionEl.textContent = "Round complete. Tap Start when you're ready for another 30-word round.";
+      showFeedback("", "");
+      maybeAutoIncreaseDifficulty();
+      updateRoundInfo();
+      return;
+    }
+
+    state.currentWord = state.currentRoundWords[state.currentIndex];
+    state.awaitingReentry = false;
+    updateRoundInfo();
+
+    wordInstructionEl.textContent =
+      "Listen to the word (audio only), then type the spelling and press Check.";
+    showFeedback("", "");
+    nextWordBtn.style.display = "none";
+
+    setInputEnabled(true);
+    speakWord(state.currentWord);
+  }
+
+  // ===============================
+  // CHECK ANSWER FLOW
+  // ===============================
+
+  function handleCheck() {
+    if (!state.currentWord) return;
+
+    const guessRaw = answerInput.value || "";
+    const guess = guessRaw.trim().toLowerCase();
+    const correctSpelling = state.currentWord;
+    const correctLower = correctSpelling.toLowerCase();
+
+    if (!guess) {
+      showFeedback("Type your answer before checking.", "error");
+      return;
+    }
+
+    // If we're in re-entry mode, require exact correct spelling before moving on
+    if (state.awaitingReentry) {
+      if (guess === correctLower) {
+        showFeedback(`Good. The correct spelling is "${correctSpelling}". Moving on.`, "success");
+        wordInstructionEl.textContent = "Nice work. Loading the next word.";
+        state.awaitingReentry = false;
+        setInputEnabled(false);
+
+        setTimeout(() => {
+          answerInput.value = "";
+          state.currentIndex += 1;
+          showNextWord();
+        }, 700);
+      } else {
+        showFeedback(
+          `That still doesn't match "${correctSpelling}". Type it exactly as shown to continue.`,
+          "error"
+        );
+      }
+      return;
+    }
+
+    // First attempt: record result and determine if we go to re-entry mode
+    const isCorrect = (guess === correctLower);
+    recordResult(correctSpelling, state.currentLevel, isCorrect);
+
+    if (isCorrect) {
+      showFeedback(`Correct! The word is "${correctSpelling}".`, "success");
+      setInputEnabled(false);
+
+      setTimeout(() => {
+        answerInput.value = "";
+        state.currentIndex += 1;
+        showNextWord();
+      }, 1000);
+    } else {
+      const wStats = ensureWordStats(correctSpelling, state.currentLevel);
+      const timesMissed = wStats.timesMissed || 0;
+      state.awaitingReentry = true;
+
+      showFeedback(
+        `Incorrect. You wrote "${guessRaw}". The correct spelling is "${correctSpelling}". ` +
+          `You have missed this word ${timesMissed} time${timesMissed === 1 ? "" : "s"}. ` +
+          `Now type "${correctSpelling}" exactly to continue.`,
+        "error"
+      );
+      wordInstructionEl.textContent =
+        "Re-type the correct spelling shown above to move on to the next word.";
+      setInputEnabled(true);
+    }
+
+    renderHistory();
+  }
+
+  function handleNextWordButton() {
+    // Not used anymore; kept for compatibility
+    return;
+  }
+
+  // ===============================
+  // HISTORY RENDERING
+  // ===============================
+
+  function renderHistory() {
+    const entries = Object.entries(stats.words);
+    if (entries.length === 0) {
+      historyContentEl.innerHTML =
+        '<div class="system-message" style="margin-top:4px;">No history yet. Start practicing to build your word history.</div>';
+      return;
+    }
+
+    entries.sort((a, b) => {
+      const wa = a[1];
+      const wb = b[1];
+      const missDiff = (wb.timesMissed || 0) - (wa.timesMissed || 0);
+      if (missDiff !== 0) return missDiff;
+      return (wb.timesSeen || 0) - (wa.timesSeen || 0);
+    });
+
+    let html = '<table><thead><tr>' +
+      '<th>Word</th>' +
+      '<th>Level</th>' +
+      '<th>Seen</th>' +
+      '<th>Correct</th>' +
+      '<th>Missed</th>' +
+      '</tr></thead><tbody>';
+
+    for (const [word, ws] of entries) {
+      html += `<tr>
+        <td class="word-text">${word}</td>
+        <td>${ws.level || ""}</td>
+        <td>${ws.timesSeen || 0}</td>
+        <td>${ws.timesCorrect || 0}</td>
+        <td>${ws.timesMissed || 0}</td>
+      </tr>`;
+    }
+
+    html += "</tbody></table>";
+    historyContentEl.innerHTML = html;
+  }
+
+  // ===============================
+  // EVENT LISTENERS
+  // ===============================
+
+  startRoundBtn.addEventListener("click", startRound);
+
+  playWordBtn.addEventListener("click", () => {
+    if (state.currentWord) {
+      speakWord(state.currentWord);
+    }
+  });
+
+  defineBtn.addEventListener("click", () => {
+    if (state.currentWord) {
+      speakDefinition(state.currentWord);
+    }
+  });
+
+  checkBtn.addEventListener("click", handleCheck);
+  nextWordBtn.addEventListener("click", handleNextWordButton);
+
+  answerInput.addEventListener("keydown", (e) => {
+    if (e.key === "Enter") {
+      e.preventDefault();
+      if (!checkBtn.disabled) {
+        handleCheck();
+      }
+    }
+  });
+
+  missedModeCheckbox.addEventListener("change", () => {
+    state.missedOnlyMode = missedModeCheckbox.checked;
+    systemMessageEl.textContent = state.missedOnlyMode
+      ? "Missed-words-only mode: rounds will focus on words you've missed before."
+      : "Standard mode: a mix of new words and missed words, with missed words prioritized.";
+  });
+
+  difficultySelectEl.addEventListener("change", setDifficultyFromSelect);
+
+  resetStatsBtn.addEventListener("click", resetStats);
+
+  // ===============================
+  // INIT
+  // ===============================
+
+  function init() {
+    loadStats();
+    checkSpeechSupport();
+    updateStatsUI();
+    renderHistory();
+
+    if ("speechSynthesis" in window) {
+      loadVoices();
+      window.speechSynthesis.onvoiceschanged = loadVoices;
+    }
+  }
+
+  init();
+</script>
+</body>
+</html>
